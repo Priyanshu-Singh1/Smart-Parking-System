@@ -1,0 +1,48 @@
+{
+    "bookings": [
+        {
+            "bookingId": "BK1701234567890",
+            "slotId": "A2",
+            "timestamp": "2023-12-01T09:30:00Z",
+            "user": {
+                "id": "USR111",
+                "name": "Alice Smith",
+                "email": "alice@example.com"
+            },
+            "status": "completed"
+        },
+        {
+            "bookingId": "BK1701234567891",
+            "slotId": "B1",
+            "timestamp": "2023-12-01T10:15:00Z",
+            "user": {
+                "id": "USR112",
+                "name": "Bob Johnson",
+                "email": "bob@example.com"
+            },
+            "status": "active"
+        },
+        {
+            "bookingId": "BK1701234567892",
+            "slotId": "B4",
+            "timestamp": "2023-12-01T11:00:00Z",
+            "user": {
+                "id": "USR113",
+                "name": "Carol Wilson",
+                "email": "carol@example.com"
+            },
+            "status": "active"
+        },
+        {
+            "bookingId": "BK1701234567893",
+            "slotId": "C3",
+            "timestamp": "2023-12-01T14:30:00Z",
+            "user": {
+                "id": "USR114",
+                "name": "David Brown",
+                "email": "david@example.com"
+            },
+            "status": "pending"
+        }
+    ]
+}

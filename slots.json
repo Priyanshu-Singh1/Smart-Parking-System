@@ -1,0 +1,16 @@
+{
+    "slots": [
+        {"id": "A1", "status": "available", "type": "standard", "floor": "1"},
+        {"id": "A2", "status": "booked", "type": "standard", "floor": "1"},
+        {"id": "A3", "status": "available", "type": "handicap", "floor": "1"},
+        {"id": "A4", "status": "available", "type": "standard", "floor": "1"},
+        {"id": "B1", "status": "booked", "type": "standard", "floor": "1"},
+        {"id": "B2", "status": "available", "type": "electric", "floor": "1"},
+        {"id": "B3", "status": "available", "type": "standard", "floor": "1"},
+        {"id": "B4", "status": "booked", "type": "standard", "floor": "1"},
+        {"id": "C1", "status": "available", "type": "standard", "floor": "2"},
+        {"id": "C2", "status": "available", "type": "electric", "floor": "2"},
+        {"id": "C3", "status": "booked", "type": "handicap", "floor": "2"},
+        {"id": "C4", "status": "available", "type": "standard", "floor": "2"}
+    ]
+}
