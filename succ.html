@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartPark | Payment Success</title>
+  <style>
+    body {
+      background: #e3f9e5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .success-card {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .checkmark {
+      font-size: 60px;
+      color: #28a745;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      margin: 10px 0;
+      color: #333;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .home-btn {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .home-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    // After showing success message for 3 seconds, redirect to confirmation
+    setTimeout(() => {
+      window.location.href = "../confirmation.php";
+    }, 3000);
+  </script>
+</head>
+<body>
+  <div class="success-card">
+    <div class="checkmark">✅</div>
+    <h2>Payment Successful</h2>
+    <p>Thank you for booking with SmartPark.</p>
+    <a href="index.html" class="home-btn">Go to Homepage</a>
+  </div>
+</body>
+</html>

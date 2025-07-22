@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartPark UPI Payment</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      background: linear-gradient(-45deg, #e0f7fa, #f1f8ff, #d0e8f2, #eaf5fb);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: white;
+      padding: 26px 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      width: 360px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 24px;
+      color: #0d47a1;
+      font-weight: bold;
+      margin-bottom: 18px;
+    }
+
+    .logo::before {
+      content: "🚗";
+      margin-right: 6px;
+    }
+
+    .details {
+      text-align: left;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .details strong {
+      width: 100px;
+      display: inline-block;
+    }
+
+    .amount {
+      font-size: 22px;
+      font-weight: bold;
+      color: #0d47a1;
+      margin-bottom: 6px;
+    }
+
+    .breakdown {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .qr {
+      width: 180px;
+      height: 180px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    .confirm-btn {
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 12px 0;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .confirm-btn:hover {
+      background-color: #1b5e20;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .spinner {
+      border: 5px solid #ccc;
+      border-top: 5px solid #1565c0;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Hides the UPI label text under QR */
+    .upi-info {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">SmartPark</div>
+    <div class="details">
+      <p><strong>Name:</strong> Rahul Sharma</p>
+      <p><strong>Vehicle Type:</strong> 4-Wheeler</p>
+      <p><strong>Check-in:</strong> 2:00 PM</p>
+      <p><strong>Check-out:</strong> 4:00 PM</p>
+      <p><strong>Slot:</strong> A12</p>
+    </div>
+
+    <div class="amount">₹80</div>
+    <div class="breakdown">Charges: ₹40/hour × 2 hours</div>
+
+    <!-- ✅ Auto-filling ₹80 in QR UPI Payment -->
+    <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?data=upi%3A%2F%2Fpay%3Fpa%3D9235270063%40ybl%26pn%3DSmartPark%26am%3D80%26cu%3DINR%26tn%3DSmartPark%2BBooking&size=180x180" alt="Pay via UPI QR" />
+
+    <!-- ⛔ This was the extra line showing UPI info — now hidden -->
+    <p class="upi-info">Scan to pay via UPI (Pay to 9235270063@ybl)</p>
+
+    <!-- ✅ Button -->
+    <button class="confirm-btn" onclick="startPayment()">✅ Confirm Payment</button>
+  </div>
+
+  <!-- ✅ Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="spinner"></div>
+      <div>Processing Payment...</div>
+    </div>
+  </div>
+  <script>
+    function startPayment() {
+      document.getElementById("modal").style.display = "flex";
+      setTimeout(() => {
+        // After payment success, redirect to process payment
+        window.location.href = "process_payment.php"; 
+      }, 2500);
+    }
+    
+    // Load booking data from session
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('get_booking_data.php')
+        .then(response => response.json())
+        .then(data => {
+          document.querySelector('.details').innerHTML = `
+            <p><strong>Name:</strong> ${data.userName}</p>
+            <p><strong>Vehicle Type:</strong> 4-Wheeler</p>
+            <p><strong>Check-in:</strong> ${data.checkInTime}</p>
+            <p><strong>Check-out:</strong> ${data.checkOutTime}</p>
+            <p><strong>Slot:</strong> ${data.slotNumber}</p>
+          `;
+          document.querySelector('.amount').textContent = `₹${data.amount}`;
+          // Update QR code with actual amount
+          document.querySelector('.qr').src = 
+            `https://api.qrserver.com/v1/create-qr-code/?data=upi%3A%2F%2Fpay%3Fpa%3D9235270063%40ybl%26pn%3DSmartPark%26am%3D${data.amount}%26cu%3DINR%26tn%3DSmartPark%2BBooking&size=180x180`;
+        });
+    });
+  </script>
+</head>
+<body>
