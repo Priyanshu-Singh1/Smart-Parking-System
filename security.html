@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Smart Parking - AI Security</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Custom Tailwind Colors (Matching Dashboard for consistency) */
+        :root {
+            --darkbg: #222831;
+            --cardbg: #2a3038;
+            --primarygreen: #98FB98; /* Updated to a slightly different light green */
+            --secondaryyellow: #FFD700;
+            --textgray: #a9a9a9;
+            --dangerred: #ef4444; /* red-500 */
+            --warningorange: #f97316; /* orange-500 */
+            --successgreen: #22c55e; /* green-500 */
+            --infoyellow: #fbbf24; /* amber-400 */
+            --ai-blue: #00bcd4; /* A vibrant blue for AI elements */
+            --ai-purple: #9c27b0; /* A deep purple */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--darkbg); /* Fallback for animated-bg */
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            opacity: 0; /* Hidden initially to prevent FOUC with JS animation */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
+            background-size: 400% 400%;
+            animation: gradientMove 16s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Navigation Specific Styles */
+        nav {
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50; /* Ensure nav is on top */
+        }
+
+        /* Title and Logo Container for Combined Animation */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            /* Animation for the whole brand section */
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            animation: brandFloat 5s ease-in-out infinite alternate; /* Gentle continuous float */
+        }
+
+        @keyframes brandFloat {
+            0% { transform: translateY(0px) rotateX(0deg); }
+            50% { transform: translateY(-5px) rotateX(2deg); } /* Subtle lift and tilt */
+            100% { transform: translateY(0px) rotateX(0deg); }
+        }
+
+
+        .nav-logo {
+            height: 40px; /* Adjust as needed */
+            margin-right: 0.75rem;
+            border-radius: 50%; /* If your logo is round */
+            box-shadow: 0 0 10px var(--primarygreen); /* Initial subtle glow */
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        /* Text shadow enhancement on brand hover */
+        .nav-brand:hover .nav-logo {
+             box-shadow: 0 0 20px var(--primarygreen), 0 0 30px rgba(180, 224, 159, 0.5); /* Enhanced glow on hover */
+        }
+
+
+        .nav-title {
+            font-size: 2.25rem; /* text-3xl */
+            font-weight: 800; /* Extra bold */
+            color: var(--primarygreen); /* Always highlighted green */
+            margin-right: 2rem; /* Space between title and links */
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 8px rgba(180, 224, 159, 0.5); /* Initial text glow */
+            transition: text-shadow 0.3s ease-in-out;
+        }
+
+        /* Text shadow enhancement on brand hover */
+        .nav-brand:hover .nav-title {
+            text-shadow: 0 0 20px var(--primarygreen), 0 0 30px rgba(180, 224, 159, 0.7);
+        }
+
+        nav a {
+            color: var(--textgray); /* Default link color */
+            transition: color 0.3s ease-in-out, transform 0.2s ease, border-color 0.3s ease;
+            padding-bottom: 2px; /* For the active border */
+            border-bottom: 2px solid transparent; /* Transparent border for non-active */
+        }
+
+        nav a:hover {
+            transform: translateY(-2px);
+            color: var(--primarygreen); /* Highlight on hover */
+        }
+
+        nav a.active {
+            color: var(--primarygreen);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primarygreen); /* Subtle indicator for active page */
+        }
+
+        /* Section Styling */
+        .security-section {
+            flex-grow: 1; /* Allows content to push footer down */
+            padding: 2.5rem 1.5rem; /* p-10 (vert) and p-6 (horiz) */
+            text-align: center;
+            max-width: 1400px; /* Wider content area */
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 3rem; /* Larger title */
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* mb-6 */
+            color: var(--primarygreen);
+            letter-spacing: 0.05em; /* Slightly more space */
+            text-shadow: 0 0 10px rgba(180, 224, 159, 0.3); /* Subtle glow */
+        }
+
+        .section-description {
+            margin-bottom: 2.5rem; /* mb-10 */
+            font-size: 1.25rem; /* lg */
+            color: var(--textgray);
+            line-height: 1.6;
+        }
+
+        /* Security Image Gallery */
+        .security-image-gallery {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem; /* Space between images */
+            margin-bottom: 3rem; /* Space below the gallery */
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 640px) { /* Small screens and up */
+            .security-image-gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens and up */
+            .security-image-gallery {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 200px; /* Fixed height for consistency */
+            object-fit: cover; /* Ensures images cover the area without distortion */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Soft shadow */
+            border: 2px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; /* Indicate interactivity */
+        }
+
+        .gallery-img:hover {
+            transform: translateY(-5px) scale(1.02); /* Slight lift and scale on hover */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* AI Overview Section */
+        .ai-overview-card {
+            background: linear-gradient(135deg, var(--cardbg), #3a414a); /* Subtle gradient */
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* More rounded */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            justify-content: space-around;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .overview-item {
+            flex: 1 1 200px; /* Flexible items */
+            margin: 0.5rem 1rem;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .overview-item .value {
+            font-size: 2.25rem; /* 3xl */
+            font-weight: bold;
+            color: var(--ai-blue); /* Changed to AI Blue */
+            margin-bottom: 0.25rem;
+        }
+
+        .overview-item .label {
+            font-size: 0.875rem; /* sm */
+            color: var(--textgray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Recent Alerts Log */
+        .alerts-log-container {
+            background-color: var(--cardbg);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 0.1);
+        }
+
+        .alerts-log-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dangerred);
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .alerts-log {
+            max-height: 300px; /* Fixed height for scrolling */
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--primarygreen) var(--cardbg); /* Firefox */
+        }
+
+        /* Custom Scrollbar for Webkit browsers */
+        .alerts-log::-webkit-scrollbar {
+            width: 8px;
+        }
+        .alerts-log::-webkit-scrollbar-track {
+            background: var(--cardbg);
+            border-radius: 10px;
+        }
+        .alerts-log::-webkit-scrollbar-thumb {
+            background-color: var(--primarygreen);
+            border-radius: 10px;
+            border: 2px solid var(--cardbg);
+        }
+
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+            color: var(--textgray);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item .timestamp {
+            color: var(--primarygreen);
+            font-weight: 500;
+        }
+        /* Dynamic Alert Message Colors */
+        .alert-item .message {
+            font-weight: bold;
+        }
+        .alert-item .message.high { color: var(--dangerred); }
+        .alert-item .message.medium { color: var(--warningorange); }
+        .alert-item .message.low { color: var(--infoyellow); }
+        .alert-item .message.info { color: var(--successgreen); }
+        .alert-item .message.critical { color: #880808; } /* Even darker red for critical */
+
+
+        .alert-item .location {
+            font-style: italic;
+        }
+
+        /* Camera Grid */
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem; /* gap-6 */
+            max-width: 1200px;
+            margin: 2.5rem auto 0; /* Added top margin */
+        }
+
+        @media (min-width: 768px) {
+            .camera-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .camera-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Camera Card Styles */
+        .camera-card {
+            background: linear-gradient(135deg, var(--cardbg), #3a414a);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent; /* Base border */
+            text-align: left; /* Align text within card to left */
+            display: flex;
+            flex-direction: column;
+            cursor: pointer; /* Indicate interactivity */
+        }
+
+        .camera-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Live Indicator */
+        .live-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--dangerred);
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: pulse-live 1.5s infinite;
+            z-index: 15; /* Ensure it's above the video overlay */
+        }
+
+        @keyframes pulse-live {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Live Stream Placeholder */
+        .live-stream-placeholder {
+            width: 100%;
+            height: 12rem;
+            background-color: #000;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--textgray);
+            font-size: 1.2rem;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated scan line for the live feed */
+        .live-stream-placeholder::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--primarygreen), transparent);
+            animation: scanLine 3s infinite linear;
+        }
+
+        @keyframes scanLine {
+            0% { transform: translateY(0%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* Overlay for alert visualization */
+        .live-stream-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent; /* Default */
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            color: white;
+            opacity: 0; /* Hidden by default */
+        }
+
+        .live-stream-overlay.active {
+            opacity: 1;
+        }
+        .live-stream-overlay.high { background-color: rgba(239, 68, 68, 0.5); /* red */ }
+        .live-stream-overlay.medium { background-color: rgba(249, 115, 22, 0.5); /* orange */ }
+        .live-stream-overlay.low { background-color: rgba(251, 191, 36, 0.5); /* amber */ }
+        .live-stream-overlay.critical { background-color: rgba(136, 8, 8, 0.7); } /* Even darker red for critical */
+
+
+        .camera-card h3 {
+            font-size: 1.35rem; /* Slightly larger */
+            font-weight: bold;
+            color: var(--ai-blue); /* Changed to AI Blue */
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Icon for camera title */
+        .camera-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            fill: var(--ai-blue);
+        }
+
+        .camera-info p {
+            font-size: 0.95rem;
+            color: var(--textgray);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .camera-info p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Status text and icons */
+        .status-text {
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .status-clear { color: var(--successgreen); }
+        .status-motion { color: var(--warningorange); }
+        .status-anomaly { color: var(--dangerred); }
+        .status-lowlight { color: var(--infoyellow); }
+
+        .ai-metric-label {
+            font-weight: 500;
+            color: var(--primarygreen);
+        }
+
+        /* Alert Specific Styles */
+        .camera-card.alert-active {
+            border-color: var(--dangerred); /* Prominent red border */
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .alert-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--dangerred); /* Red overlay */
+            color: white;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-out;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .alert-message.active {
+            transform: translateY(0%);
+        }
+
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            color: var(--textgray);
+            font-size: 0.875rem; /* sm */
+            margin-top: auto; /* Push footer to bottom */
+            padding: 2rem;
+            background-color: rgba(0, 0, 0, 0.5); /* Slightly darker footer */
+        }
+
+        /* General Icons (Placeholder for proper SVG integration) */
+        .icon {
+            width: 1.1em;
+            height: 1.1em;
+            vertical-align: middle;
+            display: inline-block;
+            margin-right: 0.3em;
+        }
+        .icon-cctv { fill: currentColor; }
+        .icon-status { fill: currentColor; }
+        .icon-confidence { fill: currentColor; }
+        .icon-analysis { fill: currentColor; }
+        .icon-objects { fill: currentColor; }
+        .icon-alert { fill: var(--dangerred); }
+        .icon-fire { fill: var(--dangerred); }
+
+        /* Icon styles for new metrics */
+        .icon-shield { fill: var(--ai-blue); }
+        .icon-target { fill: var(--ai-purple); }
+
+        /* Styles for the audio toggle button */
+        .audio-control { /* Using your provided class name */
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            position: fixed; /* Keep fixed positioning */
+            bottom: 4rem; /* Match previous bottom-4 */
+            right: 4rem; /* Match previous right-4 */
+            padding: 0.75rem; /* p-3 */
+            border-radius: 9999px; /* rounded-full */
+            background-color: var(--primarygreen); /* bg-primarygreen */
+            color: var(--darkbg); /* text-darkbg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            z-index: 50;
+        }
+
+        .audio-control:hover {
+            background-color: #9cd17f; /* Slightly darker green on hover */
+            transform: scale(1.05);
+        }
+
+    </style>
+</head>
+<body class="animated-bg" id="page">
+
+    <audio id="background-audio" loop autoplay muted>
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path id="speaker-icon-path" d="M16.5 12c0-1.77-1-3.22-2.5-4v.61L17.17 12l-3.17 4v.61c1.5-.78 2.5-2.23 2.5-4zM3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.22-2.5-4v8c1.5-.78 2.5-2.23 2.5-4zM19 12c0 .9-.23 1.74-.63 2.5L20.5 16.37c.73-1.39 1.13-2.92 1.13-4.37 0-4.01-2.99-8.01-7-9.24v.77c3.49 1.13 6 4.41 6 8.47zM4.2 14.8L2.73 16.27l.7.7 1.47-1.47 1.47 1.47.7-.7L5.67 14.8 7.14 13.33l-.7-.7-1.47 1.47-1.47-1.47z"/>
+        </svg>
+    </button>
+
+    <nav class="flex items-center p-4 bg-black bg-opacity-70 shadow-lg z-50">
+        <div class="flex items-center nav-brand"> <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="nav-logo">
+            <h1 class="nav-title">Smart Parking</h1>
+        </div>
+        <div class="flex-grow flex justify-end space-x-4">
+            <a href="index.html" class="px-3" data-page="index.html">Home</a>
+            <a href="login.html" class="px-3" data-page="login.html">Login</a>
+            <a href="report.html" class="px-3" data-page="report.html">Dashboard</a>
+            <a href="forecast.html" class="px-3" data-page="forecast.html">Forecast</a>
+            <a href="map.html" class="px-3" data-page="map.html">Map</a>
+            <a href="security.html" class="px-3" data-page="security.html">Security</a>
+            <a href="profile.html" class="px-3" data-page="profile.html">Profile</a>
+            <a href="billing.html" class="px-3" data-page="billing.html">Billing</a>
+        </div>
+    </nav>
+
+    <section class="security-section">
+        <h2 class="section-title">🔐 AI-Powered Security Operations Center</h2>
+        <p class="section-description">
+            Experience unparalleled parking security with our AI-driven surveillance system.
+            Intelligent algorithms continuously monitor live feeds, perform real-time object detection,
+            and instantly alert staff to any anomalies or suspicious activities across all zones.
+        </p>
+
+        <div class="security-image-gallery">
+            <img src="Images/Survelliance.jpg" alt="Security Camera" class="gallery-img">
+            <img src="Images/server.jpg" alt="Server Room" class="gallery-img">
+            <img src="Images/controlroom.jpg" alt="Control Room" class="gallery-img">
+            <img src="Images/ai car.jpg" alt="AI Interface" class="gallery-img">
+        </div>
+        <div class="ai-overview-card">
+            <div class="overview-item">
+                <div class="value" id="total-alerts">0</div>
+                <div class="label">Total Alerts Today</div>
+            </div>
+            <div class="overview-item">
+                <div class="value" id="active-anomalies">0</div>
+                <div class="label">Active Anomalies</div>
+            </div>
+            <div class="overview-item">
+                <div class="value" id="ai-uptime">99.9%</div>
+                <div class="label">AI Uptime</div>
+            </div>
+            <div class="overview-item">
+                <div class="value" id="threat-level">Low</div> <div class="label">Current Threat Level</div>
+            </div>
+            <div class="overview-item">
+                <div class="value" id="detection-rate">98%</div> <div class="label">Detection Accuracy</div>
+            </div>
+        </div>
+
+        <div class="alerts-log-container">
+            <h3 class="alerts-log-title">Recent AI Alerts <span class="text-xs text-textgray">(Last 24 Hours)</span></h3>
+            <div class="alerts-log" id="recent-alerts-log">
+                </div>
+        </div>
+
+
+        <div class="camera-grid" id="camera-feed-grid">
+            </div>
+    </section>
+
+    <footer class="dashboard-footer">
+        <p>&copy; 2025 Smart Parking Solutions. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- Utility Functions ---
+        const formatDateTime = (date) => date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const formatTimeOnly = (date) => date.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        // CORRECTED: getRandomFloat now returns a number, not a string
+        const getRandomFloat = (min, max) => (Math.random() * (max - min) + min);
+
+        // --- Simulated Camera Data ---
+        const cameraData = [
+            { id: 'zoneA', name: 'Zone A - Entry Gate', lastStatus: 'Clear', lastAnalyzed: new Date(), aiConfidence: '98.5%', detectedObjects: ['Car', 'Person'] },
+            { id: 'zoneB', name: 'Zone B - Basement', lastAnalyzed: new Date(), aiConfidence: '97.2%', detectedObjects: ['Car', 'Pillar'] },
+            { id: 'zoneC', name: 'Zone C - Rooftop', lastAnalyzed: new Date(), aiConfidence: '99.1%', detectedObjects: ['Car'] },
+            { id: 'zoneD', name: 'Zone D - Exit Point', lastAnalyzed: new Date(), aiConfidence: '98.8%', detectedObjects: ['Car', 'Barrier'] },
+            { id: 'zoneE', name: 'Zone E - Parking Level 1', lastAnalyzed: new Date(), aiConfidence: '97.9%', detectedObjects: ['Car', 'Motorcycle'] },
+            { id: 'zoneF', name: 'Zone F - Valet Area', lastAnalyzed: new Date(), aiConfidence: '98.1%', detectedObjects: ['Car', 'Valet Staff'] }
+        ];
+
+        // More diverse alert types with associated severity
+        const alertTypes = [
+            { type: 'Object Left Behind', severity: 'medium' },
+            { type: 'Unauthorized Access', severity: 'high' },
+            { type: 'Vehicle Malfunction', severity: 'low' },
+            { type: 'Suspicious Activity', severity: 'high' },
+            { type: 'Vandalism Detected', severity: 'medium' },
+            { type: 'Fire Hazard Detected', severity: 'critical' }, // New critical level
+            { type: 'Loitering', severity: 'low' },
+            { type: 'Crowd Gathering', severity: 'medium' }
+        ];
+        const commonObjects = ['Car', 'Person', 'Motorcycle', 'Bicycle', 'Truck', 'Van', 'Barrier', 'Pillar', 'Sign', 'Luggage', 'Drone'];
+
+        let totalAlertsToday = 0;
+        let activeAnomaliesSet = new Set(); // To track unique active anomalies
+
+        // --- Render Camera Cards ---
+        const renderCameraCards = () => {
+            const grid = document.getElementById('camera-feed-grid');
+            grid.innerHTML = ''; // Clear existing cards
+
+            cameraData.forEach(camera => {
+                const card = document.createElement('div');
+                card.id = `camera-${camera.id}`;
+                card.className = 'camera-card';
+                // CORRECTED: Apply toFixed(1) when setting initial confidence display
+                card.innerHTML = `
+                    <div class="alert-message" id="alert-message-${camera.id}"></div>
+                    <span class="live-indicator">LIVE</span>
+                    <div class="live-stream-placeholder">
+                        <span>Live Feed Unavailable</span>
+                        <div class="live-stream-overlay" id="overlay-${camera.id}"></div>
+                    </div>
+                    <h3>
+                        <svg class="icon camera-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0-10c-5.33 0-9.67 4.1-10 9.3V22c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1.1c.96.42 2.03.7 3.16.82C10 22 11 22 12 22s2 0 2.84-.18c1.13-.12 2.19-.4 3.16-.82V22c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-10.7C21.67 6.1 17.33 2 12 2zm0 18c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                        </svg>
+                        ${camera.name}
+                    </h3>
+                    <div class="camera-info">
+                        <p>AI Status: <span class="status-text" id="status-${camera.id}">${camera.lastStatus || 'Loading...'}</span></p>
+                        <p><span class="ai-metric-label">Last Analyzed:</span> <span id="last-analyzed-${camera.id}">${formatTimeOnly(camera.lastAnalyzed)}</span></p>
+                        <p><span class="ai-metric-label">AI Confidence:</span> <span id="confidence-${camera.id}">${parseFloat(camera.aiConfidence).toFixed(1)}%</span></p>
+                        <p><span class="ai-metric-label">Detected Objects:</span> <span id="objects-${camera.id}">${camera.detectedObjects.join(', ')}</span></p>
+                    </div>
+                `;
+                grid.appendChild(card);
+                updateCameraStatusVisuals(camera.id, camera.lastStatus, null, camera.detectedObjects); // Initial status coloring
+            });
+        };
+
+        // --- Update Camera Status Visuals ---
+        const updateCameraStatusVisuals = (cameraId, newStatus, alertInfo = null, detectedObjects = []) => {
+            const statusEl = document.getElementById(`status-${cameraId}`);
+            const cardEl = document.getElementById(`camera-${cameraId}`);
+            const alertMessageEl = document.getElementById(`alert-message-${cameraId}`);
+            const objectsEl = document.getElementById(`objects-${cameraId}`);
+            const overlayEl = document.getElementById(`overlay-${cameraId}`);
+            const threatLevelEl = document.getElementById('threat-level');
+
+            if (!statusEl || !cardEl || !alertMessageEl || !objectsEl || !overlayEl) return;
+
+            // Remove all previous status classes and alert state
+            statusEl.classList.remove('status-clear', 'status-motion', 'status-anomaly', 'status-lowlight');
+            cardEl.classList.remove('alert-active');
+            alertMessageEl.classList.remove('active');
+            alertMessageEl.textContent = ''; // Clear any previous alert text
+
+            overlayEl.classList.remove('active', 'high', 'medium', 'low', 'critical'); // Clear overlay classes
+            overlayEl.textContent = ''; // Clear overlay text
+
+            // If a camera is transitioning *out* of an anomaly state, remove it from the set
+            if (activeAnomaliesSet.has(cameraId) && alertInfo === null) {
+                activeAnomaliesSet.delete(cameraId);
+                updateActiveAnomaliesCount();
+            }
+
+            // Update status text and apply new status color class
+            statusEl.textContent = newStatus;
+            objectsEl.textContent = detectedObjects.join(', ');
+
+            if (newStatus === 'Clear') {
+                statusEl.classList.add('status-clear');
+            } else if (newStatus === 'Motion Detected') {
+                statusEl.classList.add('status-motion');
+            } else if (newStatus === 'Low Light') {
+                statusEl.classList.add('status-lowlight');
+            } else { // Assume it's an anomaly/alert if not standard status
+                statusEl.classList.add('status-anomaly');
+                if (alertInfo) { // If alertInfo is provided, it's an active alert
+                    cardEl.classList.add('alert-active');
+                    alertMessageEl.textContent = `ALERT: ${alertInfo.type.toUpperCase()}`;
+                    alertMessageEl.classList.add('active');
+
+                    // Activate and style the overlay
+                    overlayEl.classList.add('active', alertInfo.severity);
+                    overlayEl.textContent = `${alertInfo.type.toUpperCase()}!`;
+
+
+                    activeAnomaliesSet.add(cameraId);
+                }
+            }
+            updateActiveAnomaliesCount(); // Update the count after each camera's status is processed
+
+            // Update Global Threat Level based on active anomalies
+            if (activeAnomaliesSet.size > 0) {
+                threatLevelEl.textContent = 'High';
+                threatLevelEl.style.color = 'var(--dangerred)';
+            } else {
+                threatLevelEl.textContent = 'Low';
+                threatLevelEl.style.color = 'var(--successgreen)';
+            }
+        };
+
+        // --- Recent Alerts Log Logic ---
+        const recentAlertsLog = document.getElementById('recent-alerts-log');
+
+        const addAlertToLog = (type, location, severity = 'info') => { // Added severity parameter
+            totalAlertsToday++;
+            document.getElementById('total-alerts').textContent = totalAlertsToday;
+
+            const alertItem = document.createElement('div');
+            alertItem.className = 'alert-item';
+            alertItem.innerHTML = `
+                <span class="timestamp">${formatTimeOnly(new Date())}</span>
+                <span class="message ${severity}">${type}</span>
+                <span class="location">${location}</span>
+            `;
+            if (recentAlertsLog.firstChild) {
+                recentAlertsLog.insertBefore(alertItem, recentAlertsLog.firstChild);
+            } else {
+                recentAlertsLog.appendChild(alertItem);
+            }
+            while (recentAlertsLog.children.length > 25) { // Increased log size slightly
+                recentAlertsLog.removeChild(recentAlertsLog.lastChild);
+            }
+        };
+
+        const updateActiveAnomaliesCount = () => {
+            document.getElementById('active-anomalies').textContent = activeAnomaliesSet.size;
+        };
+
+        // Simulate initial historical alerts
+        const populateHistoricalAlerts = () => {
+            const now = new Date();
+            for (let i = 0; i < 5; i++) { // Add 5 random historical alerts
+                const randomCamera = cameraData[getRandomInt(0, cameraData.length - 1)];
+                const randomAlert = alertTypes[getRandomInt(0, alertTypes.length - 1)];
+                // Simulate time in the past within last 24 hours
+                const pastTime = new Date(now.getTime() - getRandomInt(1000 * 60 * 5, 1000 * 60 * 60 * 23));
+                const alertItem = document.createElement('div');
+                alertItem.className = 'alert-item';
+                alertItem.innerHTML = `
+                    <span class="timestamp">${formatTimeOnly(pastTime)}</span>
+                    <span class="message ${randomAlert.severity}">${randomAlert.type}</span>
+                    <span class="location">${randomCamera.name}</span>
+                `;
+                recentAlertsLog.appendChild(alertItem); // Add to end for historical
+            }
+        };
+
+        // --- Simulate AI Alerts and Status Changes ---
+        const simulateAITouch = () => {
+            cameraData.forEach(camera => {
+                // Simulate AI analysis delay
+                setTimeout(() => {
+                    const random = Math.random();
+                    let newStatus = 'Clear';
+                    let alertInfo = null; // Changed to object for severity
+                    let detectedObjs = [];
+                    // CORRECTED: Call getRandomFloat, which now returns a number
+                    let aiConfidence = getRandomFloat(95, 99.9);
+
+                    // Update last analyzed time for all cameras
+                    camera.lastAnalyzed = new Date();
+                    document.getElementById(`last-analyzed-${camera.id}`).textContent = formatTimeOnly(camera.lastAnalyzed);
+
+                    // Simulate object detection
+                    const numObjects = getRandomInt(1, 4); // More diverse object count
+                    for (let i = 0; i < numObjects; i++) {
+                        detectedObjs.push(commonObjects[getRandomInt(0, commonObjects.length - 1)]);
+                    }
+                    camera.detectedObjects = [...new Set(detectedObjs)]; // Remove duplicates
+
+                    // AI logic for status changes
+                    if (random < 0.12) { // 12% chance of an anomaly alert (increased)
+                        const chosenAlert = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+                        newStatus = chosenAlert.type;
+                        alertInfo = chosenAlert;
+                        // CORRECTED: Call getRandomFloat, which now returns a number
+                        aiConfidence = getRandomFloat(60, 90); // Lower confidence for anomalies
+                        addAlertToLog(newStatus, camera.name, chosenAlert.severity); // Pass severity
+                    } else if (random < 0.30) { // 18% chance of motion detected
+                        newStatus = 'Motion Detected';
+                    } else if (random < 0.40) { // 10% chance of low light
+                        newStatus = 'Low Light';
+                    } else { // 60% chance of clear
+                        newStatus = 'Clear';
+                    }
+
+                    camera.lastStatus = newStatus; // Update last status for next iteration
+                    // CORRECTED: Apply toFixed(1) when setting confidence display text
+                    camera.aiConfidence = `${aiConfidence.toFixed(1)}%`;
+                    document.getElementById(`confidence-${camera.id}`).textContent = camera.aiConfidence;
+
+
+                    updateCameraStatusVisuals(camera.id, newStatus, alertInfo, camera.detectedObjects);
+
+                    // If it's an alert, simulate resolution after some time
+                    if (alertInfo) {
+                        setTimeout(() => {
+                            if (activeAnomaliesSet.has(camera.id)) {
+                                const clearedStatus = 'Clear';
+                                camera.lastStatus = clearedStatus;
+                                // CORRECTED: Call getRandomFloat, which now returns a number
+                                camera.aiConfidence = `${getRandomFloat(98, 99.9).toFixed(1)}%`;
+                                updateCameraStatusVisuals(camera.id, clearedStatus, null, camera.detectedObjects); // Pass null for alertInfo to clear
+                                document.getElementById(`confidence-${camera.id}`).textContent = camera.aiConfidence;
+                                addAlertToLog(`Alert Resolved: ${alertInfo.type}`, camera.name, 'info'); // Mark as info
+                            }
+                        }, getRandomInt(8000, 15000)); // Alert lasts 8-15 seconds
+                    }
+                }, getRandomInt(100, 700)); // Simulate async AI analysis delay for each camera
+            });
+            updateDetectionAccuracy(); // Update detection accuracy
+        };
+
+        // Simulate Detection Accuracy
+        const updateDetectionAccuracy = () => {
+            const detectionRateEl = document.getElementById('detection-rate');
+            const currentAccuracy = parseFloat(detectionRateEl.textContent);
+            // CORRECTED: fluctuation is now a number
+            const fluctuation = getRandomFloat(-0.5, 0.5); // Small fluctuation
+            let newAccuracy = (currentAccuracy + fluctuation);
+            if (newAccuracy > 99.5) newAccuracy = 99.5; // Cap max
+            if (newAccuracy < 90) newAccuracy = 90; // Cap min
+            // CORRECTED: Apply toFixed(1) when displaying
+            detectionRateEl.textContent = `${newAccuracy.toFixed(1)}%`;
+        };
+
+
+        // --- Initial Render and Periodic Updates ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Page load animation
+            document.getElementById('page').classList.add('loaded');
+
+            // Explicitly highlight desired links when on security.html
+            const linksToHighlight = [
+                'index.html',  // Home
+                'map.html',    // Map
+                'billing.html', // Billing
+                'forecast.html', // Forecast
+                'security.html', // Security
+                'login.html', // Login
+                'slots.html', // Slots
+                'report.html', // Dashboard
+                'profile.html' // Profile
+            ];
+
+            linksToHighlight.forEach(page => {
+                const link = document.querySelector(`nav a[data-page="${page}"]`);
+                if (link) {
+                    link.classList.add('active');
+                }
+            });
+
+
+            // Initial setup
+            renderCameraCards();
+            populateHistoricalAlerts(); // Populate log with historical data first
+            addAlertToLog('System Initialized', 'Global', 'info'); // Initial log entry
+            updateActiveAnomaliesCount(); // Set initial active anomalies count (0)
+            updateDetectionAccuracy(); // Set initial detection accuracy
+
+            simulateAITouch(); // Initial run of AI simulation
+
+            // Set intervals for periodic updates (simulated)
+            setInterval(simulateAITouch, 10000); // Run AI simulation every 10 seconds (faster for demo)
+            setInterval(updateDetectionAccuracy, 5000); // Update detection accuracy more frequently
+
+            // --- Audio Control ---
+            const backgroundAudio = document.getElementById('background-audio');
+            const clickSound = document.getElementById('clickSound');
+            const audioToggleButton = document.getElementById('audio-toggle');
+            const speakerIconPath = document.getElementById('speaker-icon-path'); // Reference the path element directly
+
+            // Set initial volume for background audio
+            backgroundAudio.volume = 0.2; // Match your HTML attribute
+
+            // Ensure the initial icon reflects the 'muted' HTML state
+            // Muted icon path: Speaker with a cross
+            speakerIconPath.setAttribute('d', 'M16.5 12c0-1.77-1-3.22-2.5-4v.61L17.17 12l-3.17 4v.61c1.5-.78 2.5-2.23 2.5-4zM3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.22-2.5-4v8c1.5-.78 2.5-2.23 2.5-4zM19 12c0 .9-.23 1.74-.63 2.5L20.5 16.37c.73-1.39 1.13-2.92 1.13-4.37 0-4.01-2.99-8.01-7-9.24v.77c3.49 1.13 6 4.41 6 8.47zM4.2 14.8L2.73 16.27l.7.7 1.47-1.47 1.47 1.47.7-.7L5.67 14.8 7.14 13.33l-.7-.7-1.47 1.47-1.47-1.47z');
+
+
+            // Toggle mute/unmute on button click
+            audioToggleButton.addEventListener('click', () => {
+                clickSound.currentTime = 0; // Reset click sound to start
+                clickSound.play().catch(e => console.warn("Click sound play failed:", e));
+
+                if (backgroundAudio.muted) {
+                    backgroundAudio.muted = false;
+                    // Try to play if it was paused (e.g., if even muted autoplay was blocked)
+                    backgroundAudio.play().catch(error => console.error("Error playing background audio on unmute:", error));
+                    // Unmuted icon path: Speaker with volume bars
+                    speakerIconPath.setAttribute('d', 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.22-2.5-4v8c1.5-.78 2.5-2.23 2.5-4zM16 2.76v.77c3.49 1.13 6 4.41 6 8.47s-2.51 7.34-6 8.47v.77c4.01-1.23 7-5.02 7-9.24s-2.99-8.01-7-9.24z');
+                } else {
+                    backgroundAudio.muted = true;
+                    // Muted icon path: Speaker with a cross
+                    speakerIconPath.setAttribute('d', 'M16.5 12c0-1.77-1-3.22-2.5-4v.61L17.17 12l-3.17 4v.61c1.5-.78 2.5-2.23 2.5-4zM3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.22-2.5-4v8c1.5-.78 2.5-2.23 2.5-4zM19 12c0 .9-.23 1.74-.63 2.5L20.5 16.37c.73-1.39 1.13-2.92 1.13-4.37 0-4.01-2.99-8.01-7-9.24v.77c3.49 1.13 6 4.41 6 8.47zM4.2 14.8L2.73 16.27l.7.7 1.47-1.47 1.47 1.47.7-.7L5.67 14.8 7.14 13.33l-.7-.7-1.47 1.47-1.47-1.47z');
+                }
+            });
+
+            // Add click sound to navigation links
+            const navLinks = document.querySelectorAll('nav a'); // Re-select nav links for click sound
+            navLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(e => console.warn("Click sound play failed on nav link:", e));
+                });
+            });
+
+            // Add click sound to camera cards
+            const cameraCards = document.querySelectorAll('.camera-card');
+            cameraCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(e => console.warn("Click sound play failed on camera card:", e));
+                });
+            });
+
+            // NEW: Add click sound to image gallery items
+            const galleryImages = document.querySelectorAll('.gallery-img');
+            galleryImages.forEach(img => {
+                img.addEventListener('click', () => {
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(e => console.warn("Click sound play failed on image gallery item:", e));
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

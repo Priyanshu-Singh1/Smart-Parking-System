@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking - Billing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Standardized Body and Page Transition */
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+            opacity: 0; /* Start with opacity 0 for fade-in */
+            transition: opacity 0.4s ease-in; /* Fade-in transition */
+        }
+
+        body.fade-in-active {
+            opacity: 1; /* Target opacity for fade-in */
+        }
+
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* Consistent Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite; /* Adjusted duration for smoothness */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect - Refined for 3D appearance */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.06); /* Slightly less opaque for better transparency */
+            backdrop-filter: blur(15px); /* Increased blur for a softer look */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Softer border */
+            border-radius: 28px; /* Slightly more rounded */
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45); /* More diffused shadow */
+            transition: all 0.4s ease-in-out;
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 18px 55px 0 rgba(0, 0, 0, 0.65); /* More prominent on hover */
+            transform: translateY(-7px); /* Slightly more lift */
+        }
+
+        /* Hero Section/Content Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+        .animate-delay-800 { animation-delay: 0.8s; }
+        .animate-delay-1000 { animation-delay: 1s; }
+
+
+        /* Button Hover Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.4); /* Softer glow */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 220%; /* Slightly larger glow */
+            height: 220%;
+        }
+
+        /* Button Pulsate Animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); /* Softer pulse shadow */
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Highlighted Nav Link Styling (now applied to all by default) */
+        .nav-link-highlight {
+            text-shadow: 0 0 10px rgba(134, 239, 172, 0.7); /* Slightly stronger text shadow */
+            text-decoration: underline;
+            color: #34d399;
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        /* Nav Link Hover effect (still useful even if all are highlighted, adds extra pop) */
+        .nav-link-highlight:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(134, 239, 172, 1);
+        }
+
+        /* Input Field Styling (kept for consistency, even if not directly on dashboard) */
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .input-field-custom {
+            width: 100%;
+            padding: 1rem 0.75rem;
+            border: 1px solid rgba(113, 128, 150, 0.5);
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.7);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field-custom::placeholder {
+            color: transparent;
+        }
+
+        .input-field-custom:focus + .input-label-custom,
+        .input-field-custom:not(:placeholder-shown) + .input-label-custom {
+            top: -0.8rem;
+            left: 0.5rem;
+            font-size: 0.8rem;
+            color: #34d399;
+            background-color: #203a43;
+            padding: 0 0.3rem;
+            border-radius: 3px;
+        }
+
+        /* Audio Control Button Styling */
+        .audio-control {
+            position: fixed;
+            bottom: 25px; /* Slightly higher from bottom */
+            right: 25px; /* Slightly higher from right */
+            background-color: rgba(45, 212, 191, 0.8); /* Slightly more opaque */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px; /* Slightly larger */
+            height: 55px; /* Slightly larger */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem; /* Slightly larger icon */
+            cursor: pointer;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4); /* More prominent shadow */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.95); /* Darker on hover */
+            transform: scale(1.08); /* More noticeable scale */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo and Title 3D Effect (Always highlighted and animated) */
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%;
+            overflow: hidden;
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6),
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15);
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9),
+            0 0 40px rgba(134, 239, 172, 0.7);
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8),
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC;
+            animation: subtlePulse 2s infinite alternate;
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08);
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0;
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02);
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        /* Image Floating Animation (if you use images with this effect) */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75); /* Slightly darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's above everything */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: relative;
+            background: rgba(30, 41, 59, 0.95); /* More opaque for modal content */
+            backdrop-filter: blur(18px); /* Increased blur for modal */
+            border: 1px solid rgba(255, 255, 255, 0.25); /* Stronger border */
+            border-radius: 35px; /* More rounded */
+            padding: 40px; /* Increased padding */
+            max-width: 650px; /* Slightly wider */
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8); /* More prominent shadow */
+            transform: scale(0.7); /* Starts smaller */
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease; /* Pop-out effect */
+            color: white;
+            text-align: center;
+            opacity: 0; /* For modal content animation */
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-close-button {
+            position: absolute;
+            top: 20px; /* Adjusted position */
+            right: 20px; /* Adjusted position */
+            background: none;
+            border: none;
+            font-size: 2.2rem; /* Larger close button */
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: white;
+            transform: scale(1.15) rotate(5deg); /* Slightly more playful hover */
+        }
+
+        /* Billing Specific Styles */
+        .billing-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .billing-table-header th {
+            background-color: rgba(52, 211, 153, 0.25); /* Green-400 with more opacity */
+            color: #A7F3D0; /* Green-200 */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.08em; /* Slightly more letter spacing */
+            padding: 1rem 1.5rem; /* More padding in headers */
+        }
+
+        .billing-table-row:hover {
+            background-color: rgba(255, 255, 255, 0.05); /* Slightly more prominent hover */
+        }
+
+        .billing-table-row.paid .status-text {
+            color: #34D399; /* Green-500 */
+        }
+
+        .billing-table-row.pending .status-text {
+            color: #FBBF24; /* Yellow-500 */
+        }
+
+        .billing-table-row.refunded .status-text {
+            color: #EF4444; /* Red-500 */
+        }
+
+        /* Digital Wallet Icon/Visual */
+        .digital-wallet-visual {
+            width: 130px; /* Slightly larger */
+            height: 130px; /* Slightly larger */
+            background: linear-gradient(135deg, #0f2027, #2c5364);
+            border-radius: 30px; /* More rounded square */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 30px rgba(45, 212, 191, 0.5); /* Stronger glow and shadow */
+            animation: float 3.5s ease-in-out infinite; /* Slower float animation */
+            margin: 0 auto 2.5rem; /* More space below */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .digital-wallet-visual::before {
+            content: '';
+            position: absolute;
+            top: 12px; /* Adjusted inner border position */
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            border: 3px solid rgba(134, 239, 172, 0.7); /* Thicker, more opaque inner border */
+            border-radius: 20px; /* Matches outer border better */
+        }
+
+        .digital-wallet-visual svg {
+            filter: drop-shadow(0 0 10px rgba(134, 239, 172, 0.9)); /* Stronger glow effect for SVG */
+            width: 70px; /* Larger icon */
+            height: 70px;
+        }
+
+        /* Summary Cards */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1); /* Slightly more prominent background */
+            backdrop-filter: blur(12px); /* Increased blur */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
+            border-radius: 20px; /* More rounded */
+            padding: 2rem; /* More padding */
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* More prominent shadow */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-8px) scale(1.02); /* More noticeable lift and scale */
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        /* New "Second Slide" Section Styling */
+        .second-slide-section {
+            background: rgba(255, 255, 255, 0.08); /* Slightly more opaque for distinctness */
+            backdrop-filter: blur(18px); /* Increased blur */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
+            border-radius: 30px; /* More rounded */
+            padding: 3rem; /* More padding */
+            margin-bottom: 2.5rem; /* Space below */
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6); /* More prominent shadow */
+            text-align: center;
+            overflow: hidden; /* For image animations */
+        }
+
+        .second-slide-section img {
+            border-radius: 15px; /* Rounded corners for images */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Shadow for images */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .second-slide-section img:hover {
+            transform: scale(1.05); /* Slight zoom on hover */
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="animated-bg text-white min-h-screen flex flex-col justify-center items-center" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Profile</a>
+            <a href="billing.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="forecast.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Forecast</a>
+            <a href="login.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col justify-center items-center py-20 px-4">
+        <div class="glassmorphism text-white p-8 rounded-xl shadow-2xl animate-fade-in w-full max-w-4xl">
+            <h2 class="text-5xl md:text-6xl font-extrabold text-center mb-6 text-green-300 tracking-wide">
+                💳 Billing & Payment History
+            </h2>
+            <p class="text-lg md:text-xl mb-10 text-center text-gray-200">
+                Manage your transactions and view detailed payment records with ease.
+            </p>
+
+            <div class="digital-wallet-visual">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div class="summary-card animate-fade-in-up animate-delay-200">
+                    <h3 class="text-2xl font-bold text-green-300 mb-2">Total Paid</h3>
+                    <p class="text-4xl font-extrabold text-white mt-2">₹<span id="totalPaidAmount">0.00</span></p>
+                </div>
+                <div class="summary-card animate-fade-in-up animate-delay-400">
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-2">Outstanding Balance</h3>
+                    <p class="text-4xl font-extrabold text-white mt-2">₹<span id="outstandingBalanceAmount">0.00</span></p>
+                </div>
+                <div class="summary-card animate-fade-in-up animate-delay-600">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-2">Total Transactions</h3>
+                    <p class="text-4xl font-extrabold text-white mt-2"><span id="totalTransactionsCount">0</span></p>
+                </div>
+            </div>
+
+            <div class="second-slide-section animate-fade-in-up animate-delay-800">
+                <h3 class="text-4xl font-extrabold text-teal-300 mb-6">Seamless & Secure Payments</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+                    <div class="flex flex-col items-center">
+                        <img src="Images/secure pay.png" alt="Secure Payment" class="w-full max-w-xs h-auto mb-4">
+                        <p class="text-lg font-semibold text-green-200">Advanced Security Protocols</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <img src="Images/digitalwallets.jog.jpg" alt="Digital Wallets" class="w-full max-w-xs h-auto mb-4">
+                        <p class="text-lg font-semibold text-green-200">Multiple Digital Wallet Options</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <img src="Images/payment.jpg" alt="Easy Payment" class="w-full max-w-xs h-auto mb-4">
+                        <p class="text-lg font-semibold text-green-200">Quick & Convenient Transactions</p>
+                    </div>
+                </div>
+                <button class="mt-10 bg-purple-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg
+                                 hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 btn-glow
+                                 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75"
+                                 onclick="openModal('paymentModal')">
+                    Explore Payment Options
+                </button>
+            </div>
+
+            <div class="p-7 bg-black bg-opacity-25 rounded-xl border border-gray-700 shadow-lg">
+                <h3 class="text-3xl font-bold mb-5 text-green-200">Transaction History</h3>
+
+                <div class="flex flex-wrap justify-center space-x-2 md:space-x-4 mb-6">
+                    <button id="filterAll" class="px-5 py-2 rounded-full bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75 btn-glow text-base font-semibold transition duration-200">All</button>
+                    <button id="filterPaid" class="px-5 py-2 rounded-full bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 btn-glow text-base font-semibold transition duration-200">Paid</button>
+                    <button id="filterPending" class="px-5 py-2 rounded-full bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-75 btn-glow text-base font-semibold transition duration-200">Pending</button>
+                </div>
+
+                <div class="overflow-x-auto mt-6 rounded-lg shadow-xl">
+                    <table class="min-w-full text-base bg-white text-black rounded-lg overflow-hidden">
+                        <thead class="billing-table-header">
+                            <tr>
+                                <th class="py-4 px-6 text-left">Date</th>
+                                <th class="py-4 px-6 text-left">Description</th>
+                                <th class="py-4 px-6 text-left">Amount</th>
+                                <th class="py-4 px-6 text-left">Status</th>
+                                <th class="py-4 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billingTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button onclick="navigatePage('dashboard.html')" class="mt-10 bg-green-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg
+                                 hover:bg-green-800 transition-all duration-300 transform hover:scale-105 btn-glow w-full sm:w-auto
+                                 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75">
+                Back to Dashboard
+            </button>
+        </div>
+    </main>
+
+    <div id="receiptModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('receiptModal')">&times;</button>
+            <h2 class="text-3xl font-bold text-green-300 mb-5">Payment Receipt</h2>
+            <div id="receiptContent" class="text-left text-lg space-y-3 p-4 bg-gray-800 bg-opacity-70 rounded-lg">
+            </div>
+            <button class="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold btn-glow
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75" onclick="closeModal('receiptModal')">Close</button>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('paymentModal')">&times;</button>
+            <h2 class="text-3xl font-bold text-green-300 mb-5">Select Payment Method</h2>
+            <p id="paymentDetailsSummary" class="text-xl mb-8 text-gray-300"></p>
+
+            <div class="space-y-5">
+                <button class="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white font-semibold btn-glow text-lg
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75" onclick="processPayment(currentInvoiceId, 'Credit/Debit Card')">
+                    💳 Pay with Credit/Debit Card
+                </button>
+                <button class="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 rounded-xl text-white font-semibold btn-glow text-lg
+                               focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75" onclick="processPayment(currentInvoiceId, 'Internet Banking')">
+                    🏦 Internet Banking
+                </button>
+                <button class="w-full px-6 py-4 bg-teal-600 hover:bg-teal-700 rounded-xl text-white font-semibold btn-glow text-lg
+                               focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75" onclick="processPayment(currentInvoiceId, 'UPI')">
+                    📱 UPI / QR Code
+                </button>
+                <button class="w-full px-6 py-4 bg-orange-600 hover:bg-orange-700 rounded-xl text-white font-semibold btn-glow text-lg
+                               focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-75" onclick="processPayment(currentInvoiceId, 'Digital Wallet')">
+                    💰 Digital Wallet
+                </button>
+            </div>
+
+            <button class="mt-8 px-8 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg text-white font-semibold btn-glow
+                           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75" onclick="closeModal('paymentModal')">Cancel</button>
+        </div>
+    </div>
+
+
+    <script>
+        // Audio Control Script (Background Music) - Replicated across all pages
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        function navigatePage(url) {
+            playInteractiveClickSound();
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400);
+        }
+
+        function openModal(modalId) {
+            playInteractiveClickSound();
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            playInteractiveClickSound();
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+                while (targetElement && targetElement !== document.body) {
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle' && !targetElement.classList.contains('modal-close-button')) {
+                        if (!targetElement.hasAttribute('onclick')) {
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    }
+                    else if (targetElement.tagName === 'A' && targetElement.href && targetElement.getAttribute('href') !== '#') {
+                        event.preventDefault();
+                        navigatePage(targetElement.href);
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    const activeModals = document.querySelectorAll('.modal-overlay.active');
+                    activeModals.forEach(modal => closeModal(modal.id));
+                }
+            });
+
+            const page = document.getElementById('page');
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+
+            // --- Billing Specific JavaScript ---
+            let billingData = [
+                { id: 'TXN001', date: '2025-07-01', description: 'Parking Slot A1 (3 hrs)', amount: 50, status: 'Paid', paymentMethod: 'Credit Card' },
+                { id: 'TXN002', date: '2025-07-03', description: 'Parking Slot B2 (4 hrs)', amount: 60, status: 'Paid', paymentMethod: 'Internet Banking' },
+                { id: 'TXN003', date: '2025-07-05', description: 'Parking Slot C3 (2 hrs)', amount: 40, status: 'Pending', paymentMethod: '' },
+                { id: 'TXN004', date: '2025-07-06', description: 'Parking Slot D4 (5 hrs)', amount: 75, status: 'Paid', paymentMethod: 'UPI' },
+                { id: 'TXN005', date: '2025-07-07', description: 'Parking Slot E5 (1 hr)', amount: 25, status: 'Pending', paymentMethod: '' },
+            ];
+
+            const billingTableBody = document.getElementById('billingTableBody');
+            const totalPaidAmountSpan = document.getElementById('totalPaidAmount');
+            const outstandingBalanceAmountSpan = document.getElementById('outstandingBalanceAmount');
+            const totalTransactionsCountSpan = document.getElementById('totalTransactionsCount'); // New span for total transactions
+            const filterAllBtn = document.getElementById('filterAll');
+            const filterPaidBtn = document.getElementById('filterPaid');
+            const filterPendingBtn = document.getElementById('filterPending');
+            const paymentDetailsSummary = document.getElementById('paymentDetailsSummary');
+
+            let currentFilter = 'All'; // Keep track of the active filter
+            let currentInvoiceId = null; // Store the ID of the invoice currently being paid
+
+            function renderBillingTable() {
+                billingTableBody.innerHTML = ''; // Clear existing rows
+                let filteredData = billingData;
+
+                if (currentFilter !== 'All') {
+                    filteredData = billingData.filter(item => item.status === currentFilter);
+                }
+
+                let totalPaid = 0;
+                let outstandingBalance = 0;
+                let totalTransactions = billingData.length; // Count all transactions
+
+                // Calculate totals before rendering rows
+                billingData.forEach(item => {
+                    if (item.status === 'Paid') {
+                        totalPaid += item.amount;
+                    } else if (item.status === 'Pending') {
+                        outstandingBalance += item.amount;
+                    }
+                });
+
+                totalPaidAmountSpan.textContent = totalPaid.toFixed(2);
+                outstandingBalanceAmountSpan.textContent = outstandingBalance.toFixed(2);
+                totalTransactionsCountSpan.textContent = totalTransactions; // Update total transactions count
+
+                filteredData.forEach(item => {
+                    const row = document.createElement('tr');
+                    // Ensure text is black and add bottom border for clarity
+                    row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100', 'text-black', 'billing-table-row');
+                    row.classList.add(item.status.toLowerCase());
+
+                    let statusColorClass = '';
+                    if (item.status === 'Paid') {
+                        statusColorClass = 'text-green-600'; /* Slightly darker green for status */
+                    } else if (item.status === 'Pending') {
+                        statusColorClass = 'text-yellow-600'; /* Slightly darker yellow for status */
+                    } else if (item.status === 'Refunded') {
+                        statusColorClass = 'text-red-600'; /* Slightly darker red for status */
+                    }
+
+                    row.innerHTML = `
+                        <td class="py-4 px-6">${item.date}</td>
+                        <td class="py-4 px-6">${item.description}</td>
+                        <td class="py-4 px-6">₹${item.amount.toFixed(2)}</td>
+                        <td class="py-4 px-6"><span class="font-semibold ${statusColorClass} status-text">${item.status}</span></td>
+                        <td class="py-4 px-6 text-center">
+                            ${item.status === 'Pending' ?
+                                `<button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white text-sm btn-glow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">Pay Now</button>` :
+                                `<button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md text-white text-sm btn-glow focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75" onclick="viewReceipt('${item.id}')">View Receipt</button>`
+                            }
+                        </td>
+                    `;
+                    // Attach event listener directly after creating the button for "Pay Now"
+                    if (item.status === 'Pending') {
+                        const payButton = row.querySelector('button');
+                        payButton.addEventListener('click', () => preparePayment(item.id));
+                    }
+                    billingTableBody.appendChild(row);
+                });
+            }
+
+            // Function to prepare payment, opens payment modal
+            window.preparePayment = function(id) {
+                playInteractiveClickSound();
+                currentInvoiceId = id; // Store the ID of the invoice to be paid
+                const item = billingData.find(item => item.id === id);
+                if (item) {
+                    paymentDetailsSummary.textContent = `Paying for: ${item.description} - Amount: ₹${item.amount.toFixed(2)}`;
+                    openModal('paymentModal');
+                }
+            };
+
+            // Function to simulate processing payment after selecting a method
+            window.processPayment = function(id, method) {
+                playInteractiveClickSound();
+                const itemIndex = billingData.findIndex(item => item.id === id);
+                if (itemIndex !== -1) {
+                    billingData[itemIndex].status = 'Paid';
+                    billingData[itemIndex].paymentMethod = method; // Update payment method
+                    closeModal('paymentModal');
+                    // Simulate a slight delay for "payment processing" feedback
+                    setTimeout(() => {
+                        renderBillingTable(); // Re-render table with updated status
+                        alert(`Payment for ${billingData[itemIndex].description} processed successfully via ${method}!`);
+                    }, 800);
+                }
+            };
+
+            // Function to view receipt (opens a modal)
+            window.viewReceipt = function(id) {
+                playInteractiveClickSound();
+                const item = billingData.find(item => item.id === id);
+                if (item) {
+                    const receiptContent = document.getElementById('receiptContent');
+                    receiptContent.innerHTML = `
+                        <p><strong>Transaction ID:</strong> ${item.id}</p>
+                        <p><strong>Date:</strong> ${item.date}</p>
+                        <p><strong>Description:</strong> ${item.description}</p>
+                        <p><strong>Amount:</strong> ₹${item.amount.toFixed(2)}</p>
+                        <p><strong>Status:</strong> <span class="text-green-500">${item.status}</span></p>
+                        <p><strong>Payment Method:</strong> ${item.paymentMethod || 'N/A'}</p>
+                        <p class="mt-6 text-sm text-gray-400">Thank you for your payment!</p>
+                    `;
+                    openModal('receiptModal');
+                }
+            };
+
+            filterAllBtn.addEventListener('click', () => {
+                currentFilter = 'All';
+                renderBillingTable();
+            });
+            filterPaidBtn.addEventListener('click', () => {
+                currentFilter = 'Paid';
+                renderBillingTable();
+            });
+            filterPendingBtn.addEventListener('click', () => {
+                currentFilter = 'Pending';
+                renderBillingTable();
+            });
+
+            // Initial render when the page loads
+            renderBillingTable();
+        });
+    </script>
+</body>
+</html>

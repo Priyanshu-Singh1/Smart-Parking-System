@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detailed AI Reports - Smart Parking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0V4LLanw2qksYuRlEzO+tcaEPQogQ0KaoIF2cdSyf3K3zGzQ7vGj3F9n3Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <style>
+        /* Standardized Body and Page Transition */
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+            opacity: 0; /* Start with opacity 0 for fade-in */
+            transition: opacity 0.4s ease-in; /* Fade-in transition */
+        }
+
+        body.fade-in-active {
+            opacity: 1; /* Target opacity for fade-in */
+        }
+
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* Consistent Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite; /* Adjusted duration for smoothness */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect - Refined for 3D appearance */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05); /* Slightly less opaque for better shadow contrast */
+            backdrop-filter: blur(15px); /* Increased blur for stronger effect */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Softer border */
+            border-radius: 25px; /* More rounded */
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.3); /* Deeper initial shadow */
+            transition: all 0.4s ease-in-out; /* Smoother transitions */
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.5); /* Even deeper on hover */
+            transform: translateY(-5px); /* Subtle lift on hover */
+        }
+
+        /* Hero Section/Content Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+        .animate-delay-800 { animation-delay: 0.8s; } /* Added for more elements */
+        .animate-delay-1000 { animation-delay: 1s; } /* Added for more elements */
+        .animate-delay-1200 { animation-delay: 1.2s; }
+        .animate-delay-1400 { animation-delay: 1.4s; }
+
+
+        /* Button Hover Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.5); /* green-300 with opacity */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Button Pulsate Animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.8); /* Tailwind green-400, slightly more opaque */
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Highlighted Nav Link Styling (now applied to all by default) */
+        .nav-link-highlight {
+            text-shadow: 0 0 8px rgba(134, 239, 172, 0.8); /* green-300 glow */
+            text-decoration: none; /* No underline by default */
+            color: rgba(255, 255, 255, 0.8); /* Lighter text for non-current */
+            transition: all 0.3s ease;
+        }
+        .nav-link-highlight:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 12px rgba(134, 239, 172, 1);
+            color: #A7F3D0; /* Brighter on hover */
+        }
+        /* Current page nav link */
+        .nav-link-current {
+            text-shadow: 0 0 10px rgba(134, 239, 172, 0.9), 0 0 20px rgba(134, 239, 172, 0.7);
+            color: #34d399; /* Tailwind green-400 for current page */
+            transform: scale(1.1);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+
+        /* Audio Control Button Styling */
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(45, 212, 191, 0.7); /* Teal-400 with opacity */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.9); /* Teal-600 with opacity */
+            transform: scale(1.05);
+        }
+
+        /* Logo and Title 3D Effect (Always highlighted and animated) */
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%; /* Make it round if it's a square image */
+            overflow: hidden; /* Ensure rounded corners are applied */
+            transform: translateY(-3px) scale(1.08); /* Slightly lifted and enlarged by default */
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6), /* Default green glow */
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite; /* Apply subtle floating animation */
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15); /* Lift and enlarge more on hover */
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9), /* Stronger green glow on hover */
+            0 0 40px rgba(134, 239, 172, 0.7); /* Wider glow on hover */
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease; /* Added color transition */
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), /* Default green glow */
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC; /* Default color: bright green-300 */
+            animation: subtlePulse 2s infinite alternate; /* Apply subtle pulsating animation */
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08); /* Lift and enlarge slightly more on hover */
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0; /* Even brighter green on hover */
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02); /* Slightly grow */
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8); /* Stronger glow */
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        /* Image Floating Animation (if you use images with this effect) */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); } /* Subtle up and down movement */
+            100% { transform: translateY(0px); }
+        }
+
+        /* Report Specific Styles */
+        .report-card {
+            background: rgba(255, 255, 255, 0.04); /* Slightly lighter background for cards */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative; /* For loader */
+            overflow: hidden; /* For loading overlay */
+        }
+
+        .report-card:hover {
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+            transform: translateY(-3px);
+        }
+
+        /* Chart specific styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px; /* Standard height for charts */
+            margin-top: 1rem;
+            background-color: rgba(0, 0, 0, 0.2); /* Darker background for charts */
+            border-radius: 10px;
+            padding: 15px; /* Padding inside chart container */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-table-placeholder {
+            min-height: 150px;
+            flex-direction: column;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .data-table-placeholder .row {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+        .data-table-placeholder .row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .data-table-placeholder .header {
+            font-weight: bold;
+            color: #86EFAC;
+            margin-bottom: 1rem;
+            width: 90%;
+            border-bottom: 2px solid #86EFAC;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Slightly darker for better contrast with spinner */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            border-radius: 10px; /* Match parent's border-radius */
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none; /* Allow clicks through when hidden */
+        }
+
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #34d399; /* Tailwind green-400 spinner */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="animated-bg text-white min-h-screen flex flex-col" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-system-power-on-1772.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-3 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-3 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-3 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-3 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-3 transition-all duration-300 nav-link-highlight">Profile</a>
+            <a href="billing.html" class="px-3 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="report.html" class="px-3 transition-all duration-300 nav-link-highlight">Reports</a>
+            <a href="login.html" class="px-3 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center py-16 px-4 pt-32 w-full max-w-6xl mx-auto">
+        <div class="glassmorphism text-white p-8 rounded-xl shadow-2xl animate-fade-in-up w-full">
+            <h2 class="text-5xl font-extrabold text-center mb-6 text-green-300 title-3d-effect">
+                <i class="fas fa-chart-line mr-3 text-green-400"></i> Detailed AI Reports
+            </h2>
+            <p class="text-lg text-center mb-8 text-gray-300 animate-fade-in animate-delay-200">
+                Dive deep into AI-driven insights for optimal parking management and personalized user experience.
+            </p>
+
+            <div id="reports-container" class="space-y-8">
+
+                <div class="report-card animate-fade-in-up animate-delay-400">
+                    <h3 class="text-3xl font-bold mb-4 text-green-200"><i class="fas fa-chart-area mr-2"></i> Occupancy Forecast</h3>
+                    <p class="text-gray-300 mb-4">Real-time predicted parking slot occupancy for the next 24 hours across key zones, showing trends and peak times.</p>
+                    <div class="chart-container">
+                        <canvas id="occupancyChart"></canvas>
+                        <div class="loading-overlay" id="loading-occupancy">
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-gray-400 mt-4">
+                        <span>AI Accuracy: <span id="occupancy-accuracy" class="font-semibold text-green-300">--</span></span>
+                        <span>Last Updated: <span id="occupancy-last-updated">--</span></span>
+                    </div>
+                </div>
+
+                <div class="report-card animate-fade-in-up animate-delay-600">
+                    <h3 class="text-3xl font-bold mb-4 text-yellow-200"><i class="fas fa-money-bill-wave mr-2"></i> Revenue Prediction</h3>
+                    <p class="text-gray-300 mb-4">Dynamic projection of daily and cumulative revenue based on real-time occupancy and pricing models.</p>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                        <div class="loading-overlay" id="loading-revenue">
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-gray-400 mt-4">
+                        <span>AI Confidence: <span id="revenue-confidence" class="font-semibold text-yellow-300">--</span></span>
+                        <span>Last Updated: <span id="revenue-last-updated">--</span></span>
+                    </div>
+                </div>
+
+                <div class="report-card animate-fade-in-up animate-delay-800 flex flex-col md:flex-row gap-8">
+                    <div class="md:w-1/2">
+                        <h3 class="text-3xl font-bold mb-4 text-blue-200"><i class="fas fa-users-line mr-2"></i> User Behavior Analysis</h3>
+                        <p class="text-gray-300 mb-4">Insights into user parking durations, peak usage times, and preferred parking areas.</p>
+                        <div id="user-behavior-table" class="data-table-placeholder h-auto p-6">
+                            <div class="header row"><span>Metric</span><span>Value</span></div>
+                            <div class="row"><span>Average Session:</span><span id="avg-session" class="font-semibold">--</span></div>
+                            <div class="row"><span>Peak Hour:</span><span id="peak-hour" class="font-semibold">--</span></div>
+                            <div class="row"><span>Top Parking Zone:</span><span id="top-zone" class="font-semibold">--</span></div>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-4 text-right">Last Updated: <span id="user-behavior-last-updated">--</span></p>
+                    </div>
+                    <div class="md:w-1/2 flex flex-col items-center justify-center">
+                        <h4 class="text-xl font-semibold mb-3 text-blue-300">Parking Duration Distribution</h4>
+                        <div class="chart-container !h-64 !w-64"> <canvas id="durationChart"></canvas>
+                            <div class="loading-overlay" id="loading-duration">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="navigatePage('dashboard.html')" class="px-8 py-3 bg-green-700 text-white font-semibold rounded-full shadow-lg
+                                hover:bg-green-800 transition-all duration-300 transform hover:scale-105 btn-glow">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                // Attempt to play if it wasn't playing. This is the crucial part for user-initiated playback.
+                backgroundAudio.play().catch(e => console.log("Background audio play error:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+            playInteractiveClickSound(); // Play click sound on toggle
+        });
+
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        function navigatePage(url) {
+            playInteractiveClickSound();
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attempt to play muted audio on DOMContentLoaded. This might still be blocked,
+            // but the user's first click on the toggle button will ensure playback.
+            backgroundAudio.play().catch(e => console.log("Initial autoplay muted blocked (normal behavior):", e.message));
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    navigatePage(event.currentTarget.href);
+                });
+            });
+
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+                while (targetElement && targetElement !== document.body) {
+                    // Exclude audio toggle and modal close buttons, and anchor tags handled by navigatePage
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle' && !targetElement.classList.contains('modal-close-button')) {
+                        if (!targetElement.hasAttribute('onclick')) { // Only play if button doesn't have an inline onclick (like the navigatePage buttons)
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    }
+                    else if (targetElement.tagName === 'A' && targetElement.href && targetElement.getAttribute('href') !== '#') {
+                        // A tags are handled by the separate nav a listener
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            const page = document.getElementById('page');
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+
+            // Set active navigation link based on current page
+            const currentPath = window.location.pathname.split('/').pop();
+            document.querySelectorAll('nav a').forEach(link => {
+                const linkHref = link.getAttribute('href').split('/').pop();
+                if (linkHref === currentPath) {
+                    link.classList.add('nav-link-current');
+                } else {
+                    link.classList.remove('nav-link-current');
+                }
+            });
+
+            // --- Chart.js Initializations and Real-time Simulation ---
+
+            Chart.register(ChartDataLabels); // Register the datalabels plugin
+
+            // Helper function to get current time label
+            const getTimeLabel = () => new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // 1. Occupancy Forecast Chart (Line Chart)
+            let occupancyChart;
+            const occupancyData = {
+                labels: Array.from({ length: 10 }, (_, i) => getTimeLabel()), // Start with some initial labels
+                datasets: [{
+                    label: 'Occupancy %',
+                    data: Array.from({ length: 10 }, () => Math.floor(Math.random() * 30) + 60), // Random data between 60-90
+                    borderColor: '#34d399', // green-400
+                    backgroundColor: 'rgba(52, 211, 153, 0.2)', // green-400 with opacity
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 5,
+                    borderWidth: 2,
+                }]
+            };
+
+            const createOccupancyChart = () => {
+                const ctx = document.getElementById('occupancyChart').getContext('2d');
+                occupancyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: occupancyData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 500 // Smooth updates
+                        },
+                        plugins: {
+                            title: {
+                                display: false,
+                            },
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#ccc', // Light gray for legend text
+                                }
+                            },
+                            datalabels: { // Data labels plugin options
+                                display: false, // Don't display labels on every point for real-time
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'category', // Use 'category' for time labels
+                                labels: occupancyData.labels,
+                                title: {
+                                    display: true,
+                                    text: 'Time',
+                                    color: '#ccc'
+                                },
+                                ticks: {
+                                    color: '#aaa' // Axis labels color
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)' // Lighter grid lines
+                                }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                min: 50, // Set a floor for occupancy
+                                max: 100, // Set a ceiling
+                                title: {
+                                    display: true,
+                                    text: 'Occupancy (%)',
+                                    color: '#ccc'
+                                },
+                                ticks: {
+                                    color: '#aaa',
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)'
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const updateOccupancyChart = () => {
+                if (occupancyChart) {
+                    // Add new data point
+                    occupancyChart.data.labels.push(getTimeLabel());
+                    occupancyChart.data.datasets[0].data.push(Math.floor(Math.random() * 30) + 60);
+
+                    // Remove oldest data point to keep chart "scrolling"
+                    if (occupancyChart.data.labels.length > 15) { // Keep last 15 points
+                        occupancyChart.data.labels.shift();
+                        occupancyChart.data.datasets[0].data.shift();
+                    }
+                    occupancyChart.update();
+
+                    // Update accuracy text
+                    document.getElementById('occupancy-accuracy').innerText = `${(Math.random() * 5 + 90).toFixed(1)}%`;
+                    document.getElementById('occupancy-last-updated').innerText = new Date().toLocaleTimeString();
+                }
+            };
+
+            // 2. Revenue Prediction Chart (Bar and Line Chart)
+            let revenueChart;
+            const revenueLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const historicalRevenueData = Array.from({ length: 7 }, () => Math.floor(Math.random() * 5000) + 15000); // 15k-20k
+            const predictedRevenueData = Array.from({ length: 3 }, () => Math.floor(Math.random() * 7000) + 18000); // 18k-25k
+
+            const createRevenueChart = () => {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                revenueChart = new Chart(ctx, {
+                    type: 'bar', // Start as bar chart
+                    data: {
+                        labels: revenueLabels.concat(['Next Mon', 'Next Tue', 'Next Wed']), // Combine labels
+                        datasets: [
+                            {
+                                label: 'Actual Revenue (INR)',
+                                data: historicalRevenueData.concat(Array(3).fill(null)), // Null for predicted bars
+                                backgroundColor: '#fbbf24', // yellow-400
+                                borderColor: '#d97706', // yellow-700
+                                borderWidth: 1,
+                            },
+                            {
+                                label: 'Predicted Revenue (INR)',
+                                data: Array(7).fill(null).concat(predictedRevenueData), // Null for historical bars
+                                backgroundColor: 'rgba(251, 191, 36, 0.5)', // yellow-400 with opacity
+                                borderColor: '#fbbf24',
+                                borderWidth: 1,
+                                type: 'line', // Make this a line for trend
+                                fill: false,
+                                tension: 0.3,
+                                pointBackgroundColor: '#fbbf24',
+                                pointBorderColor: '#fff',
+                                pointRadius: 4,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 800 // Slower animation for this one
+                        },
+                        plugins: {
+                            title: {
+                                display: false,
+                            },
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#ccc',
+                                }
+                            },
+                            datalabels: {
+                                display: true,
+                                color: '#eee',
+                                font: {
+                                    weight: 'bold',
+                                    size: 10
+                                },
+                                formatter: function(value, context) {
+                                    if (value > 0) return `₹${(value / 1000).toFixed(0)}k`; // Format for k
+                                    return '';
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Day',
+                                    color: '#ccc'
+                                },
+                                ticks: {
+                                    color: '#aaa'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Revenue (INR)',
+                                    color: '#ccc'
+                                },
+                                ticks: {
+                                    color: '#aaa',
+                                    callback: function(value) {
+                                        return '₹' + (value / 1000) + 'k';
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)'
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const updateRevenueChart = () => {
+                if (revenueChart) {
+                    // Shift historical data, add new historical data
+                    historicalRevenueData.shift();
+                    historicalRevenueData.push(Math.floor(Math.random() * 5000) + 15000);
+
+                    // Shift predicted data, add new predicted data
+                    predictedRevenueData.shift();
+                    predictedRevenueData.push(Math.floor(Math.random() * 7000) + 18000);
+
+                    // Update labels (for a more continuous "next days" feel)
+                    // This logic ensures labels are based on actual dates relative to today
+                    const today = new Date();
+                    const newLabels = [];
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() - (6 - i)); // Go back 6 days from today
+                        newLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                    }
+                    for (let i = 0; i < 3; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() + 1 + i); // Go forward 1 to 3 days from today
+                        newLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                    }
+                    revenueChart.data.labels = newLabels;
+
+                    revenueChart.data.datasets[0].data = historicalRevenueData.concat(Array(3).fill(null));
+                    revenueChart.data.datasets[1].data = Array(7).fill(null).concat(predictedRevenueData);
+
+                    revenueChart.update();
+
+                    document.getElementById('revenue-confidence').innerText = `${(Math.random() * 5 + 88).toFixed(1)}%`;
+                    document.getElementById('revenue-last-updated').innerText = new Date().toLocaleTimeString();
+                }
+            };
+
+            // 3. User Behavior Analysis - Doughnut Chart for Duration Distribution
+            let durationChart;
+            const durationData = {
+                labels: ['< 1 hr', '1-3 hrs', '3-6 hrs', '> 6 hrs'],
+                datasets: [{
+                    data: [15, 45, 25, 15], // Initial percentages
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.8)', // Blue-green
+                        'rgba(153, 102, 255, 0.8)', // Purple
+                        'rgba(255, 159, 64, 0.8)', // Orange
+                        'rgba(54, 162, 235, 0.8)' // Sky Blue
+                    ],
+                    borderColor: '#0f2027', // Match background for separation
+                    borderWidth: 2,
+                }]
+            };
+
+            const createUserBehaviorChart = () => {
+                const ctx = document.getElementById('durationChart').getContext('2d');
+                durationChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: durationData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#ccc',
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        let sum = 0;
+                                        let dataArr = tooltipItem.dataset.data;
+                                        dataArr.map(data => { sum += data; });
+                                        let percentage = (tooltipItem.raw / sum * 100).toFixed(1) + '%';
+                                        return tooltipItem.label + ': ' + percentage;
+                                    }
+                                }
+                            },
+                            datalabels: { // Data labels plugin options
+                                color: '#fff',
+                                formatter: (value, context) => {
+                                    let sum = 0;
+                                    let dataArr = context.chart.data.datasets[0].data;
+                                    dataArr.map(data => { sum += data; });
+                                    let percentage = (value * 100 / sum).toFixed(1) + '%';
+                                    return percentage;
+                                },
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                });
+            };
+
+            const updateUserBehaviorData = () => {
+                // Update text metrics
+                document.getElementById('avg-session').innerText = `${(Math.random() * 1.5 + 2).toFixed(1)} hours`;
+                document.getElementById('peak-hour').innerText = `${Math.floor(Math.random() * 4) + 9} AM - ${Math.floor(Math.random() * 3) + 1} PM`;
+                const topZones = ['Cyber Hub', 'DLF Phase 3', 'Sector 29', 'MG Road', 'Ambience Mall', 'Golf Course Road'];
+                document.getElementById('top-zone').innerText = topZones[Math.floor(Math.random() * topZones.length)];
+                document.getElementById('user-behavior-last-updated').innerText = new Date().toLocaleTimeString();
+
+                // Update doughnut chart data
+                if (durationChart) {
+                    const newData = [
+                        Math.floor(Math.random() * 10) + 10, // <1hr: 10-20
+                        Math.floor(Math.random() * 20) + 35, // 1-3hrs: 35-55
+                        Math.floor(Math.random() * 15) + 20, // 3-6hrs: 20-35
+                        Math.floor(Math.random() * 10) + 10  // >6hrs: 10-20
+                    ];
+                    // Normalize to sum to approx 100 for percentages
+                    const total = newData.reduce((a, b) => a + b, 0);
+                    durationChart.data.datasets[0].data = newData.map(val => (val / total) * 100);
+                    durationChart.update();
+                }
+            };
+
+
+            // --- Simulate AI Data Fetching and Display ---
+            const simulateDataFetch = (reportId, delay = 1500, chartCreator, chartUpdater = null, interval = null) => {
+                const loadingOverlay = document.getElementById(`loading-${reportId}`);
+
+                // Show loading spinner
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('hidden');
+                }
+
+                setTimeout(() => {
+                    // Create chart (if applicable)
+                    if (chartCreator) {
+                        chartCreator();
+                    }
+
+                    // Update static data or initial chart data display
+                    if (reportId === 'user-behavior') {
+                        updateUserBehaviorData(); // Initial data for table
+                    }
+
+                    // Hide loading spinner
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                    }
+
+                    // Start real-time updates if an updater and interval are provided
+                    if (chartUpdater && interval) {
+                        setInterval(chartUpdater, interval);
+                    }
+
+                }, delay);
+            };
+
+            // Trigger data fetching for each report with chart creation and updates
+            simulateDataFetch('occupancy', 1000, createOccupancyChart, updateOccupancyChart, 2000); // Update every 2 seconds
+            simulateDataFetch('revenue', 2000, createRevenueChart, updateRevenueChart, 3000); // Update every 3 seconds
+            simulateDataFetch('user-behavior', 3000, null, updateUserBehaviorData, 5000); // Table and Doughnut chart data update
+            simulateDataFetch('duration', 3000, createUserBehaviorChart); // Create Doughnut chart immediately
+        });
+    </script>
+</body>
+</html>

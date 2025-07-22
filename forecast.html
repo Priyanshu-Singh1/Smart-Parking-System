@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forecast - Smart Parking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
+        /* Standardized Body and Page Transition */
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+            opacity: 0; /* Start with opacity 0 for fade-in */
+            transition: opacity 0.4s ease-in; /* Fade-in transition */
+        }
+
+        body.fade-in-active {
+            opacity: 1; /* Target opacity for fade-in */
+        }
+
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* Consistent Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite; /* Adjusted duration for smoothness */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect - Refined for 3D appearance */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.06); /* Slightly less opaque for better transparency */
+            backdrop-filter: blur(15px); /* Increased blur for a softer look */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Softer border */
+            border-radius: 28px; /* Slightly more rounded */
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45); /* More diffused shadow */
+            transition: all 0.4s ease-in-out;
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 18px 55px 0 rgba(0, 0, 0, 0.65); /* More prominent on hover */
+            transform: translateY(-7px); /* Slightly more lift */
+        }
+
+        /* Hero Section/Content Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+        .animate-delay-800 { animation-delay: 0.8s; }
+        .animate-delay-1000 { animation-delay: 1s; }
+
+
+        /* Button Hover Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.4); /* Softer glow */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 220%; /* Slightly larger glow */
+            height: 220%;
+        }
+
+        /* Button Pulsate Animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); /* Softer pulse shadow */
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Highlighted Nav Link Styling (now applied to all by default) */
+        .nav-link-highlight {
+            text-shadow: 0 0 10px rgba(134, 239, 172, 0.7); /* Slightly stronger text shadow */
+            text-decoration: underline;
+            color: #34d399;
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        /* Nav Link Hover effect (still useful even if all are highlighted, adds extra pop) */
+        .nav-link-highlight:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(134, 239, 172, 1);
+        }
+
+        /* Audio Control Button Styling */
+        .audio-control {
+            position: fixed;
+            bottom: 25px; /* Slightly higher from bottom */
+            right: 25px; /* Slightly higher from right */
+            background-color: rgba(45, 212, 191, 0.8); /* Slightly more opaque */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px; /* Slightly larger */
+            height: 55px; /* Slightly larger */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem; /* Slightly larger icon */
+            cursor: pointer;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4); /* More prominent shadow */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.95); /* Darker on hover */
+            transform: scale(1.08); /* More noticeable scale */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo and Title 3D Effect (Always highlighted and animated) */
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%;
+            overflow: hidden;
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6),
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15);
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9),
+            0 0 40px rgba(134, 239, 172, 0.7);
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8),
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC;
+            animation: subtlePulse 2s infinite alternate;
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08);
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0;
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02);
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        /* Image Floating Animation (if you use images with this effect) */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Forecast Card specific styles */
+        .forecast-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* For icon positioning */
+            overflow: hidden; /* To keep inner elements within bounds */
+        }
+        .forecast-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Border colors for demand levels */
+        .forecast-card.low { border-bottom: 5px solid #34D399; } /* Green */
+        .forecast-card.medium { border-bottom: 5px solid #FBBF24; } /* Yellow */
+        .forecast-card.high { border-bottom: 5px solid #EF4444; } /* Red */
+
+        /* Demand Icon Styling */
+        .demand-icon {
+            font-size: 3.5rem; /* Large icon */
+            margin-bottom: 0.5rem;
+            line-height: 1; /* Adjust line height for better vertical centering */
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); /* Subtle glow */
+        }
+
+        /* Specific icon colors */
+        .demand-icon.low { color: #86EFAC; } /* Light Green */
+        .demand-icon.medium { color: #FCD34D; } /* Light Yellow */
+        .demand-icon.high { color: #F87171; } /* Light Red */
+
+    </style>
+</head>
+<body class="animated-bg text-white min-h-screen flex flex-col justify-center items-center" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Profile</a>
+            <a href="billing.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="forecast.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Forecast</a>
+            <a href="login.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col justify-center items-center py-20 px-4">
+        <div class="glassmorphism text-white p-8 rounded-xl shadow-2xl animate-fade-in w-full max-w-5xl">
+            <h2 class="text-5xl md:text-6xl font-extrabold text-center mb-6 text-green-300 tracking-wide">
+                📈 Parking Demand Forecast
+            </h2>
+            <p class="text-lg md:text-xl mb-8 text-center text-gray-200 animate-fade-in-up animate-delay-200">
+                Leveraging real-time AI analysis, here's the predicted parking demand for the upcoming week, ensuring you always find a spot.
+            </p>
+
+            <div id="forecast-data-container" class="animate-fade-in-up animate-delay-400">
+                <p id="loading" class="text-center text-xl text-gray-400">🔄 Loading real-time forecast...</p>
+                <div id="forecast-chart-container" class="mt-8 mb-10 hidden">
+                    <canvas id="demandChart"></canvas>
+                </div>
+                <div id="forecast-list" class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 hidden"></div>
+                <p id="last-updated" class="text-sm text-gray-400 text-center mt-6 hidden"></p>
+            </div>
+            <div class="text-center mt-10">
+                <button id="refreshForecast" class="mt-6 bg-teal-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg
+                                 hover:bg-teal-700 transition-all duration-300 transform hover:scale-105 btn-glow
+                                 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75">
+                    Refresh Forecast
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Audio Control Script
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        function navigatePage(url) {
+            playInteractiveClickSound();
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+                while (targetElement && targetElement !== document.body) {
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle' && !targetElement.classList.contains('modal-close-button')) {
+                        if (!targetElement.hasAttribute('onclick')) { // Only play if no specific onclick is defined
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    }
+                    else if (targetElement.tagName === 'A' && targetElement.href && targetElement.getAttribute('href') !== '#') {
+                        event.preventDefault(); // Prevent default link behavior
+                        navigatePage(targetElement.href);
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    const activeModals = document.querySelectorAll('.modal-overlay.active');
+                    activeModals.forEach(modal => closeModal(modal.id));
+                }
+            });
+
+            const page = document.getElementById('page');
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+
+            // --- Forecast Specific JavaScript ---
+            const forecastList = document.getElementById('forecast-list');
+            const loadingMessage = document.getElementById('loading');
+            const lastUpdatedSpan = document.getElementById('last-updated');
+            const refreshButton = document.getElementById('refreshForecast');
+            const chartContainer = document.getElementById('forecast-chart-container');
+            const ctx = document.getElementById('demandChart').getContext('2d');
+            let demandChart; // To hold the Chart.js instance
+
+            // Function to get icon and color class based on prediction value
+            function getDemandVisuals(prediction) {
+                let demandLevelClass = '';
+                let demandIcon = '';
+                let iconColorClass = '';
+
+                if (typeof prediction === 'number') {
+                    if (prediction <= 30) {
+                        demandLevelClass = 'low';
+                        demandIcon = '🅿️'; // Parking lot icon
+                        iconColorClass = 'low'; // Greenish
+                    } else if (prediction > 30 && prediction <= 70) {
+                        demandLevelClass = 'medium';
+                        demandIcon = '🚗'; // Single car
+                        iconColorClass = 'medium'; // Yellowish
+                    } else {
+                        demandLevelClass = 'high';
+                        demandIcon = ' congestion'; // Cars with a hint of congestion
+                        iconColorClass = 'high'; // Reddish
+                    }
+                } else {
+                    // Fallback for non-numeric predictions (e.g., "Low", "Medium", "High" strings)
+                    if (prediction.toLowerCase().includes('low')) {
+                        demandLevelClass = 'low';
+                        demandIcon = '🅿️';
+                        iconColorClass = 'low';
+                    } else if (prediction.toLowerCase().includes('medium')) {
+                        demandLevelClass = 'medium';
+                        demandIcon = '🚗';
+                        iconColorClass = 'medium';
+                    } else if (prediction.toLowerCase().includes('high')) {
+                        demandLevelClass = 'high';
+                        demandIcon = ' congestion';
+                        iconColorClass = 'high';
+                    } else {
+                        demandLevelClass = ''; // Default
+                        demandIcon = '❓'; // Unknown
+                        iconColorClass = '';
+                    }
+                }
+                return { demandLevelClass, demandIcon, iconColorClass };
+            }
+
+            // Function to fetch and render forecast data
+            async function fetchAndRenderForecast() {
+                loadingMessage.classList.remove('hidden');
+                forecastList.classList.add('hidden');
+                chartContainer.classList.add('hidden');
+                lastUpdatedSpan.classList.add('hidden');
+                loadingMessage.innerText = "🔄 Loading real-time forecast...";
+
+                try {
+                    // Simulating a backend fetch. Replace with your actual endpoint.
+                    // const response = await fetch('http://localhost:5000/api/forecast');
+
+                    // Mock data for demonstration (remove in production when your backend is ready)
+                    const mockData = {
+                        "Monday": Math.floor(Math.random() * 100),
+                        "Tuesday": Math.floor(Math.random() * 100),
+                        "Wednesday": Math.floor(Math.random() * 100),
+                        "Thursday": Math.floor(Math.random() * 100),
+                        "Friday": Math.floor(Math.random() * 100),
+                        "Saturday": Math.floor(Math.random() * 100),
+                        "Sunday": Math.floor(Math.random() * 100)
+                    };
+                    const data = mockData; // Use mock data for now
+
+                    // if (!response.ok) {
+                    //     throw new Error(`HTTP error! status: ${response.status}`);
+                    // }
+                    // const data = await response.json();
+
+
+                    // Render list of cards
+                    forecastList.innerHTML = '';
+                    const labels = [];
+                    const demandData = [];
+                    Object.entries(data).forEach(([day, prediction]) => {
+                        const { demandLevelClass, demandIcon, iconColorClass } = getDemandVisuals(prediction);
+
+                        const item = document.createElement('div');
+                        item.className = `forecast-card animate-fade-in-up ${demandLevelClass}`;
+                        item.innerHTML = `
+                            <div class="demand-icon ${iconColorClass}">${demandIcon}</div>
+                            <p class="text-2xl font-bold text-gray-300 mb-1">${day}</p>
+                            <p class="text-3xl font-extrabold text-white">${prediction}%</p>
+                        `;
+                        forecastList.appendChild(item);
+
+                        labels.push(day);
+                        demandData.push(typeof prediction === 'number' ? prediction : 50); // Use 50 as placeholder if not a number
+                    });
+
+                    // Render Chart
+                    if (demandChart) {
+                        demandChart.destroy(); // Destroy existing chart if it exists
+                    }
+                    demandChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Predicted Parking Demand (%)',
+                                data: demandData,
+                                borderColor: '#34D399', // Tailwind green-500
+                                backgroundColor: 'rgba(52, 211, 153, 0.2)', // Semi-transparent green
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#A7F3D0',
+                                pointBorderColor: '#34D399',
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: 'white', // Legend text color
+                                        font: {
+                                            size: 16
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: ${context.raw}%`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)', // X-axis grid lines
+                                        borderColor: 'rgba(255, 255, 255, 0.3)', // X-axis border color
+                                    },
+                                    ticks: {
+                                        color: 'white', // X-axis tick labels color
+                                        font: {
+                                            size: 14
+                                        }
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100, // Demand is percentage
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)', // Y-axis grid lines
+                                        borderColor: 'rgba(255, 255, 255, 0.3)', // Y-axis border color
+                                    },
+                                    ticks: {
+                                        color: 'white', // Y-axis tick labels color
+                                        font: {
+                                            size: 14
+                                        },
+                                        callback: function(value) {
+                                            return value + '%'; // Add percentage sign to Y-axis
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+
+                    loadingMessage.classList.add('hidden');
+                    forecastList.classList.remove('hidden');
+                    chartContainer.classList.remove('hidden');
+                    const now = new Date();
+                    lastUpdatedSpan.textContent = `Last Updated: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+                    lastUpdatedSpan.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error('Error fetching forecast:', error);
+                    loadingMessage.innerText = "❌ Failed to fetch forecast. Please try again later. (Error: " + error.message + ")";
+                    loadingMessage.classList.remove('hidden');
+                    forecastList.classList.add('hidden');
+                    chartContainer.classList.add('hidden');
+                    lastUpdatedSpan.classList.add('hidden');
+                }
+            }
+
+            // Initial fetch on page load
+            fetchAndRenderForecast();
+
+            // Event listener for refresh button
+            refreshButton.addEventListener('click', fetchAndRenderForecast);
+
+            // Optional: Auto-refresh every 5 minutes (adjust as needed)
+            // setInterval(fetchAndRenderForecast, 300000); // 300000 ms = 5 minutes
+        });
+    </script>
+
+</body>
+</html>

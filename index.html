@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking System - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/chatbot.css">
+
+    <style>
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+        }
+
+        /* Existing CSS (animated-bg, glassmorphism, animations, btn-glow, btn-pulse, nav-link-glow, etc.) */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Glassmorphism Effect */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        /* Hero Section Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .animate-delay-400 {
+            animation-delay: 0.4s;
+        }
+
+        .animate-delay-600 {
+            animation-delay: 0.6s;
+        }
+
+        /* Button Hover Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.5); /* green-300 with opacity */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Button Pulsate Animation - Slightly more pronounced */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.8); /* Tailwind green-400, slightly more opaque */
+            }
+            70% {
+                transform: scale(1.03); /* Increased scale slightly */
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0); /* Increased spread */
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Enhanced Nav Link Hover Glow */
+        /* Removed .nav-link-glow:hover style or make it subtle if you want the "always highlighted" to be the main state */
+        .nav-link-glow:hover {
+            /* You can keep a very subtle hover, or remove it entirely */
+             text-shadow: 0 0 10px rgba(167, 243, 208, 1); /* A bit stronger glow on hover */
+             color: #E6FFE6 !important; /* Slightly lighter green on hover */
+        }
+
+
+        /* Current highlight class for navigation items (NOW ALWAYS APPLIED IN HTML) */
+        .nav a.current-highlight { /* Increased specificity for better override */
+            color: #A7F3D0 !important; /* Brighter green, !important to ensure override */
+            text-shadow: 0 0 10px rgba(167, 243, 208, 0.9), /* Strong glow */
+            0 0 20px rgba(167, 243, 208, 0.6);
+            font-weight: bold; /* Make it bold */
+            text-decoration: underline; /* Add underline for better indication */
+        }
+
+        /* New highlight class for the "Get Started" button (no current-highlight on this) */
+        .btn-permanent-highlight {
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.9), /* Green-400 glow */
+            0 0 25px rgba(52, 211, 153, 0.7);
+            animation: btnPermanentGlow 2s infinite alternate; /* Subtle pulse for the highlight */
+        }
+
+        @keyframes btnPermanentGlow {
+            0% {
+                box-shadow: 0 0 15px rgba(52, 211, 153, 0.9), 0 0 25px rgba(52, 211, 153, 0.7);
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(52, 211, 153, 1), 0 0 35px rgba(52, 211, 153, 0.8);
+            }
+        }
+
+        /* Image Floating Animation (applied to current slider image) */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-8px);
+            } /* Subtle up and down movement */
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite; /* Adjust duration as needed */
+        }
+
+        /* Input Field Styling (Corrected from @apply) */
+        .input-field {
+            width: 100%;
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-width: 1px;
+            border-color: #374151; /* gray-700 */
+            border-radius: 0.375rem; /* rounded-md */
+            background-color: #1f2937; /* gray-800 */
+            color: #ffffff; /* text-white */
+            -webkit-appearance: none; /* For consistency across browsers */
+            -moz-appearance: none; /* For consistency across browsers */
+            appearance: none; /* For consistency across browsers */
+        }
+
+        .input-field::placeholder {
+            color: #6b7280; /* placeholder-gray-500 */
+        }
+
+        .input-field:focus {
+            outline: none; /* focus:outline-none */
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5); /* This approximates focus:ring-2 focus:ring-green-500 */
+            border-color: #22c55e; /* green-500 for border on focus */
+        }
+
+        /* Audio Control Button Styling */
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(45, 212, 191, 0.7); /* Teal-400 with opacity */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 100; /* Ensure it's above other content */
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.9); /* Teal-600 with opacity */
+            transform: scale(1.05);
+        }
+
+        /* Slider specific styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* Adjust as needed */
+            height: 200px; /* Fixed height for consistency */
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex; /* To manage image visibility */
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem; /* Spacing below slider */
+        }
+
+        .slider-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures images cover the area without distortion */
+            display: none; /* Hidden by default, JavaScript will show one */
+            transition: opacity 0.5s ease-in-out;
+            position: absolute; /* Stack images */
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+
+        .slider-container img.active {
+            display: block; /* Show active image */
+            opacity: 1;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.5rem; /* Base font size for the button text (including SVG sizing potential) */
+            transition: background-color 0.3s ease;
+            z-index: 10;
+            display: flex; /* Use flexbox to center SVG icon */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .slider-btn.prev {
+            left: 10px;
+            border-radius: 5px;
+        }
+
+        .slider-btn.next {
+            right: 10px;
+            border-radius: 5px;
+        }
+
+        .slider-btn svg { /* Styling for SVG inside the button */
+            width: 1.5em; /* Inherit size from parent font-size */
+            height: 1.5em; /* Inherit size from parent font-size */
+            fill: currentColor; /* Use button's text color */
+        }
+
+        /* Custom styles for Contact Us section enhancements (Corrected from @apply) */
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .contact-info-item:last-child {
+            margin-bottom: 0; /* last:mb-0 */
+        }
+
+        .contact-info-item svg {
+            width: 1.5rem; /* w-6 */
+            height: 1.5rem; /* h-6 */
+            margin-right: 0.75rem; /* mr-3 */
+            color: #4ade80; /* text-green-400 */
+        }
+
+        .contact-link:hover {
+            color: #86efac; /* text-green-300 */
+            text-decoration: underline;
+        }
+
+        .form-input-contact {
+            width: 100%;
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-width: 1px;
+            border-color: #4b5563; /* border-gray-600 */
+            border-radius: 0.375rem; /* rounded-md */
+            background-color: #1f2937; /* bg-gray-800 */
+            color: #ffffff; /* text-white */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms; /* transition-all duration-200 */
+        }
+
+        .form-input-contact::placeholder {
+            color: #6b7280; /* placeholder-gray-500 */
+        }
+
+        .form-input-contact:focus {
+            outline: none; /* focus:outline-none */
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5); /* focus:ring-2 focus:ring-green-500 equivalent */
+            border-color: #22c55e; /* green-500 for border on focus */
+        }
+
+        /* Add fade-out transition for the body */
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* --- Modified CSS for Logo and Title 3D Effect (Always highlighted and animated) --- */
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%; /* Make it round if it's a square image */
+            overflow: hidden; /* Ensure rounded corners are applied */
+            /* Always highlighted */
+            transform: translateY(-3px) scale(1.08); /* Slightly lifted and enlarged by default */
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6), /* Default green glow */
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite; /* Apply subtle floating animation */
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15); /* Lift and enlarge more on hover */
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9), /* Stronger green glow on hover */
+            0 0 40px rgba(134, 239, 172, 0.7); /* Wider glow on hover */
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease; /* Added color transition */
+            /* Always highlighted */
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), /* Default green glow */
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC; /* Default color: bright green-300 */
+            animation: subtlePulse 2s infinite alternate; /* Apply subtle pulsating animation */
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08); /* Lift and enlarge slightly more on hover */
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0; /* Even brighter green on hover */
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02); /* Slightly grow */
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8); /* Stronger glow */
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+
+        /* --- Highlight for Main Hero Title --- */
+        .hero-title-highlight {
+            color: #34D399; /* Tailwind green-400 or a custom bright green */
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.7), /* green-400 glow */
+            0 0 20px rgba(52, 211, 153, 0.5),
+            0 0 30px rgba(52, 211, 153, 0.3);
+            transition: text-shadow 0.3s ease-in-out;
+        }
+
+        .hero-title-highlight:hover {
+            text-shadow: 0 0 15px rgba(52, 211, 153, 0.9), /* Stronger on hover */
+            0 0 25px rgba(52, 211, 153, 0.7),
+            0 0 35px rgba(52, 211, 153, 0.5);
+        }
+    </style>
+</head>
+
+<body class="text-white animated-bg min-h-screen flex flex-col">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism sticky top-0 z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold transition-all duration-300 transform title-3d-effect">Smart Parking</h1>
+        </div>
+        <div class="nav">
+            <a href="index.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="index.html">Home</a>
+            <a href="dashboard.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="dashboard.html">Dashboard</a>
+            <a href="map.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="map.html">Map</a>
+            <a href="security.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="security.html">Security</a>
+            <a href="profile.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="profile.html">Profile</a>
+            <a href="billing.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="billing.html">Billing</a>
+            <a href="forecast.html" class="px-3 transition-all duration-300 hover:underline hover:text-green-400 transform hover:scale-105 nav-link-glow current-highlight" data-href="forecast.html">Forecast</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center py-16">
+        <section class="text-center max-w-xl px-4 glassmorphism p-8">
+            <div class="slider-container animate-fade-in-up">
+                <img src="Images/ai analytics.jpg" alt="AI Technology in Smart Parking" class="active animate-float">
+                <img src="Images/Tracking.jpg" alt="Real-time Location Tracking">
+                <img src="Images/parking.jpg" alt="Parking Screenshot">
+                <img src="Images/car logo.png" alt="Smart Parking Logo">
+                <img src="Images/car.jpg" alt="Modern Car Parking">
+                <img src="Images/parking lots.jpg" alt="Intelligent Parking Lots">
+
+                <button class="slider-btn prev" onclick="changeSlide(-1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path fill-rule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 1 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button class="slider-btn next" onclick="changeSlide(1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <h2 class="text-5xl font-extrabold mb-6 leading-tight animate-fade-in-up animate-delay-200 hero-title-highlight">
+                AI-Powered Parking: The Future is Here
+            </h2>
+            <p class="text-xl mb-8 text-gray-200 animate-fade-in-up animate-delay-400">
+                Experience seamless urban navigation with real-time, AI-driven parking solutions.
+            </p>
+            <a href="login.html"
+               class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 btn-glow btn-pulse shadow-2xl btn-permanent-highlight current-highlight"
+               data-href="login.html">
+                Get Started
+            </a>
+        </section>
+    </main>
+
+    <section id="why-smart-parking" class="py-16 px-4 animated-bg text-center">
+        <div class="max-w-4xl mx-auto glassmorphism p-8">
+            <h2 class="text-4xl font-extrabold mb-8 drop-shadow-lg text-green-300">Why Smart Parking is Your Smartest Choice</h2>
+            <p class="text-lg mb-10 text-gray-200 leading-relaxed">
+                In today's bustling urban landscape, finding a parking spot can be a major source of stress and wasted time. Our Smart Parking System leverages cutting-edge **AI and real-time data** to revolutionize your parking experience, making it seamless, efficient, and stress-free. We don't just find parking; we predict, secure, and optimize it for you.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <img src="Images/Traffic congestion.jpg" alt="Traffic Congestion" class="rounded-lg shadow-xl mb-6 w-full h-auto object-cover glassmorphism animate-fade-in-up transform hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold mb-4">AI-Powered Efficiency</h3>
+                    <p class="text-gray-200">
+                        Our intelligent algorithms analyze traffic and parking patterns to guide you directly to available spots, minimizing congestion and wasted fuel.
+                    </p>
+                </div>
+                <div>
+                    <img src="Images/smartphone.jpg" alt="Smartphone Navigation" class="rounded-lg shadow-xl mb-6 w-full h-auto object-cover glassmorphism animate-fade-in-up animate-delay-200 transform hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold mb-4">Predictive & Secure Solutions</h3>
+                    <p class="text-gray-200">
+                        Utilize **AI predictions** for peak demand, enjoy secure monitoring of your vehicle, and benefit from effortless cashless billing for a complete, future-ready parking solution.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about-us" class="py-16 px-4 bg-gray-900 text-center">
+        <div class="max-w-4xl mx-auto glassmorphism p-8">
+            <h2 class="text-4xl font-extrabold mb-8 drop-shadow-lg text-green-300">About Smart Parking</h2>
+            <p class="text-lg mb-6 text-gray-200 leading-relaxed">
+                At Smart Parking, we are innovators at the intersection of urban mobility and artificial intelligence. Our mission is to transform the daily challenge of parking into a seamless, efficient, and intelligent experience for everyone.
+            </p>
+            <p class="text-lg mb-10 text-gray-200 leading-relaxed">
+                Founded by a team of passionate engineers and urban planners, we leverage cutting-edge **AI, real-time data analytics, and robust IoT infrastructure** to provide predictive parking availability, enhanced security, and streamlined billing. We believe in creating smarter cities, one parking spot at a time, contributing to a greener and less congested future.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <img src="Images/ai.jpg" alt="AI Technology in Smart Parking" class="rounded-lg shadow-xl mb-6 w-full h-auto object-cover glassmorphism animate-fade-in-up transform hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold mb-2">Our Vision</h3>
+                    <p class="text-gray-300">To be the global leader in AI-driven smart parking solutions, making urban environments more accessible and sustainable.</p>
+                </div>
+                <div>
+                    <img src="Images/location.jpg" alt="Smart City Infrastructure" class="rounded-lg shadow-xl mb-6 w-full h-auto object-cover glassmorphism animate-fade-in-up animate-delay-200 transform hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold mb-2">Our Technology</h3>
+                    <p class="text-gray-300">Utilizing advanced machine learning for accurate predictions and sensor networks for real-time occupancy updates.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="key-features" class="py-16 px-4 animated-bg text-center">
+        <div class="max-w-5xl mx-auto glassmorphism p-8">
+            <h2 class="text-4xl font-extrabold mb-10 drop-shadow-lg text-green-300">Our AI-Powered Key Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 13.293a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L10 10.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2z"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">AI Real-Time Availability</h3>
+                    <p class="text-gray-300">Access live, AI-verified parking spot availability on an interactive map.</p>
+                </div>
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM13 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2zM13 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2z"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">Advanced AI Predictions</h3>
+                    <p class="text-gray-300">Our AI forecasts parking demand, helping you plan your trips with confidence.</p>
+                </div>
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">AI-Enhanced Security</h3>
+                    <p class="text-gray-300">Benefit from AI-powered surveillance and smart alerts for vehicle safety.</p>
+                </div>
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2H4zm10 0a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4zM4 14a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4a2 2 0 00-2-2H4zm10 0a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4a2 2 0 00-2-2H4zm"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">Effortless Billing</h3>
+                    <p class="text-gray-300">Automated and transparent billing integrated with your parking history.</p>
+                </div>
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.424a1 1 0 10-1.11 1.626l1.22 1.22a.75.75 0 001.06 0l2-2a.75.75 0 00-1.06-1.06L10 9.94l-1.22-1.22a.75.75 0 00-1.06 0z"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">Intuitive User Interface</h3>
+                    <p class="text-gray-300">Our app is designed for simplicity, making smart parking accessible to all.</p>
+                </div>
+                <div class="glassmorphism p-6 text-center transition-all duration-300 transform hover:scale-105 hover:bg-gray-800">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-7-8a1 1 0 011-1h4a1 1 0 110 2H4a1 1 0 01-1-1zm11-1a1 1 0 100 2h4a1 1 0 100-2h-4z" clip-rule="evenodd"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">Dedicated 24/7 Support</h3>
+                    <p class="text-gray-300">Our support team is always ready to assist you, ensuring a smooth experience.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-6 px-4 bg-black bg-opacity-70 text-center text-gray-400">
+        <p>&copy; 2025 Smart Parking System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Audio elements
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        // Toggle background audio mute/unmute
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message)); // Attempt to play
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        // Function to play interactive click sound
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0; // Rewind to start
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        // Function for page navigation with fade-out
+        function navigatePage(url) {
+            playInteractiveClickSound(); // Play sound immediately on click
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400); // Match this duration with the fade-out transition in CSS
+        }
+
+        // Image Slider Script
+        const slides = document.querySelectorAll('.slider-container img');
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            if (index >= slides.length) {
+                currentSlide = 0;
+            } else if (index < 0) {
+                currentSlide = slides.length - 1;
+            } else {
+                currentSlide = index;
+            }
+
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'animate-float');
+                slide.style.opacity = '0';
+            });
+
+            requestAnimationFrame(() => {
+                slides[currentSlide].classList.add('active', 'animate-float');
+                slides[currentSlide].style.opacity = '1';
+            });
+        }
+
+        function changeSlide(direction) {
+            playInteractiveClickSound(); // Play sound when changing slide via buttons
+            showSlide(currentSlide + direction);
+        }
+
+        // REMOVED THE highlightCurrentNavLink FUNCTION
+        // Since you want all nav links permanently highlighted, this dynamic function is no longer needed.
+
+
+        // DOMContentLoaded listener for all initializations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Autoplay policy handling for background audio (still relies on user interaction for unmuted play)
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            // Event listener for all clickable elements (buttons and links with data-href)
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+
+                // Check if the clicked element or its parent is a button or an anchor with data-href
+                // This handles clicks on elements *inside* buttons/anchors (like SVG icons)
+                while (targetElement != null && targetElement !== document.body) {
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle') {
+                        // Check if it's a slider button or another interactive button
+                        if (targetElement.classList.contains('slider-btn')) {
+                            // The onclick already calls changeSlide which plays sound
+                            // No need to play sound again here for slider buttons
+                        } else {
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    } else if (targetElement.tagName === 'A' && targetElement.dataset.href) {
+                        event.preventDefault(); // Prevent default link behavior
+                        navigatePage(targetElement.dataset.href);
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            // Initialize slider
+            showSlide(0); // Display the first slide
+
+            // No need to call highlightCurrentNavLink() anymore
+        });
+    </script>
+    <script src="js/chatbot.js"></script>
+</body>
+</html>

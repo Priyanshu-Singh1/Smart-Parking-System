@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking - Auto Allocation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .slot-btn { width: 100px; height: 60px; font-size: 1.1rem; margin: 10px; border-radius: 10px; }
+    .exit-marker { background-color: #ff9800 !important; font-weight: bold; color: white !important; }
+    .suggested-slot { animation: pulse 1.5s infinite; border: 3px solid #4CAF50 !important; }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .occupied { opacity: 0.6; }
+    
+    /* Location Modal Styles */
+    .location-icon {
+      font-size: 3rem;
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-20px); }
+      60% { transform: translateY(-10px); }
+    }
+    
+    .modal-body .alert {
+      margin-top: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    #enableLocation {
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    #enableLocation:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-icon {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .alert {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .alert i {
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2 class="mb-4 fw-bold text-primary text-center">🚗 Welcome to Smart Auto Parking</h2>
+
+  <div class="mb-3 text-center">
+    <label for="floorSelect" class="form-label fw-semibold">Select Floor:</label>
+    <select id="floorSelect" class="form-select w-50 mx-auto" onchange="loadSlots()">
+      <option value="">-- Choose Floor --</option>
+      <option value="1">Floor 1</option>
+      <option value="2">Floor 2</option>
+      <option value="3">Floor 3</option>
+    </select>
+  </div>
+
+  <h4 id="selectedSlot" class="text-info text-center">No slot selected</h4>
+  <div id="parkingGrid" class="d-flex flex-wrap justify-content-center mt-4"></div>
+
+  <!-- Booking Form -->
+  <div class="card mt-5 glassmorphism">
+    <style>
+      .glassmorphism {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.3s ease-in-out;
+        padding: 20px;
+        color: white;
+      }
+      .glassmorphism:hover {
+        box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5);
+      }
+      .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+      }
+      .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .form-select {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      .form-select:focus {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+      }
+      h2.text-primary {
+        color: white !important;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      }
+      .text-info {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+    </style>
+    <div class="card-body">
+      <h5 class="card-title">Booking Details</h5>
+      <form id="bookingForm" action="save_booking.php" method="POST">
+        <input type="hidden" id="slotNumberInput" name="slotNumber">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="userName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="userName" name="userName" required>
+          </div>
+          <div class="col-md-6">
+            <label for="userPhone" class="form-label">Phone Number</label>
+            <input type="tel" class="form-control" id="userPhone" name="userPhone" required>
+          </div>
+          <div class="col-md-6">
+            <label for="userEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="userEmail" name="userEmail" required>
+          </div>
+          <div class="col-md-6">
+            <label for="bookingDate" class="form-label">Booking Date</label>
+            <input type="date" class="form-control" id="bookingDate" name="bookingDate" required>
+          </div>
+          <div class="col-md-6">
+            <label for="checkInTime" class="form-label">Check-in Time</label>
+            <input type="time" class="form-control" id="checkInTime" name="checkInTime" required>
+          </div>
+          <div class="col-md-6">
+            <label for="checkOutTime" class="form-label">Check-out Time</label>
+            <input type="time" class="form-control" id="checkOutTime" name="checkOutTime" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success mt-4 btn-glow btn-pulse">
+          <style>
+            .btn-glow {
+              position: relative;
+              overflow: hidden;
+              z-index: 1;
+              transition: all 0.3s ease;
+            }
+            .btn-glow::before {
+              content: '';
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 0;
+              height: 0;
+              background: rgba(134, 239, 172, 0.5);
+              border-radius: 50%;
+              transform: translate(-50%, -50%);
+              transition: width 0.4s ease, height 0.4s ease;
+              z-index: -1;
+            }
+            .btn-glow:hover::before {
+              width: 200%;
+              height: 200%;
+            }
+            .btn-pulse {
+              animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+              0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.8);
+              }
+              70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+              }
+            }
+          </style>
+          Confirm Booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Auto-Allocation Modal -->
+  <div class="modal fade" id="suggestionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Suggested Parking Slot</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <h2>🎯 Smart Slot Allocation</h2>
+  <p>We’ve selected slot <strong id="slot-number">F1-03</strong> for you.</p>
+  <ul>
+    <li>📍 Closest to entrance</li>
+    <li>🚦 Reduces congestion</li>
+    <li>✅ Available now</li>
+  </ul>
+          </p>
+          <div class="alert alert-success">
+            <h4 id="suggestedSlotDisplay" class="text-center"></h4>
+            <p class="text-center mb-0">Estimated walking time: <span id="walkingTimeEstimate">1 minute</span></p>
+          </div>
+          <p>Would you like to accept this suggestion?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success btn-glow btn-pulse" id="acceptSuggestion">Accept</button>
+          <button type="button" class="btn btn-secondary btn-glow" id="chooseManually">Choose Manually</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const parkingConfig = {
+    1: {
+      slots: ['F1-01', 'F1-02', 'F1-03', 'F1-04', 'F1-05', 'F1-06', 'F1-07', 'F1-08', 'F1-09', 'F1-10', 'F1-11', 'F1-12', 'F1-13', 'F1-14', 'F1-15'],
+      exitPosition: 14,
+      walkingTimes: [3.0, 2.8, 2.5, 2.2, 2.0, 1.8, 1.5, 1.3, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.1]
+    },
+    2: {
+      slots: ['F2-01', 'F2-02', 'F2-03', 'F2-04', 'F2-05', 'F2-06', 'F2-07', 'F2-08', 'F2-09', 'F2-10', 'F2-11', 'F2-12', 'F2-13', 'F2-14', 'F2-15'],
+      exitPosition: 7,
+      walkingTimes: [1.5, 1.3, 1.1, 0.9, 0.7, 0.5, 0.3, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5]
+    },
+    3: {
+      slots: ['F3-01', 'F3-02', 'F3-03', 'F3-04', 'F3-05', 'F3-06', 'F3-07', 'F3-08', 'F3-09', 'F3-10', 'F3-11', 'F3-12', 'F3-13', 'F3-14', 'F3-15'],
+      exitPosition: 0,
+      walkingTimes: [0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1, 2.3, 2.5, 2.7, 2.9]
+    }
+  };
+
+  let selectedSlot = null;
+  let suggestedSlot = null;
+  const suggestionModal = new bootstrap.Modal('#suggestionModal');
+  const bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+
+  function loadSlots() {
+    const floor = document.getElementById('floorSelect').value;
+    if (!floor) return;
+
+    const grid = document.getElementById('parkingGrid');
+    grid.innerHTML = '';
+    const floorData = parkingConfig[floor];
+    const availableSlots = floorData.slots.filter(slot => !bookedSlots.includes(slot));
+    suggestBestSlot(floor, availableSlots);
+
+    floorData.slots.forEach((slot, index) => {
+      const btn = document.createElement('button');
+      btn.className = `btn slot-btn ${bookedSlots.includes(slot) ? 'btn-danger occupied' : 'btn-outline-primary'}`;
+      btn.textContent = slot;
+      btn.disabled = bookedSlots.includes(slot);
+      if (index === floorData.exitPosition) {
+        btn.innerHTML = `${slot}<br><small>EXIT</small>`;
+      }
+      if (slot === suggestedSlot) {
+        btn.classList.add('suggested-slot');
+        btn.classList.replace('btn-outline-primary', 'btn-success');
+      }
+      btn.onclick = () => selectSlot(slot);
+      grid.appendChild(btn);
+    });
+
+    if (suggestedSlot && availableSlots.length > 0) {
+      showSuggestionModal(floor);
+    }
+  }
+
+  function suggestBestSlot(floor, availableSlots) {
+    const floorData = parkingConfig[floor];
+    let closestSlot = null;
+    let minDistance = Infinity;
+
+    availableSlots.forEach(slot => {
+      const index = floorData.slots.indexOf(slot);
+      const distance = Math.abs(index - floorData.exitPosition);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestSlot = slot;
+      }
+    });
+
+    suggestedSlot = closestSlot;
+    return closestSlot;
+  }
+
+  function showSuggestionModal(floor) {
+    const floorData = parkingConfig[floor];
+    const walkingTime = floorData.walkingTimes[floorData.slots.indexOf(suggestedSlot)].toFixed(1);
+    document.getElementById('suggestedSlotDisplay').textContent = suggestedSlot;
+    document.getElementById('walkingTimeEstimate').textContent = `${walkingTime} minutes`;
+    suggestionModal.show();
+  }
+
+  function selectSlot(slot) {
+    suggestedSlot = null;
+    selectedSlot = slot;
+    document.getElementById('selectedSlot').textContent = `Selected: ${slot}`;
+    document.getElementById('slotNumberInput').value = slot;
+
+    document.querySelectorAll('.slot-btn').forEach(btn => {
+      const btnSlot = btn.textContent.replace("EXIT", "").trim();
+      btn.classList.remove('btn-success', 'suggested-slot');
+      if (!btn.classList.contains('btn-danger') && !btn.classList.contains('exit-marker')) {
+        btn.classList.remove('btn-outline-primary');
+        if (btnSlot === slot) {
+          btn.classList.add('btn-success');
+        } else {
+          btn.classList.add('btn-outline-primary');
+        }
+      }
+    });
+  }
+
+  document.getElementById('acceptSuggestion').addEventListener('click', () => {
+    selectSlot(suggestedSlot);
+    suggestionModal.hide();
+  });
+
+  document.getElementById('chooseManually').addEventListener('click', () => {
+  // Remove highlight from previously suggested slot
+  document.querySelectorAll('.slot-btn').forEach(btn => {
+    const btnSlot = btn.textContent.replace("EXIT", "").trim();
+    if (btnSlot === suggestedSlot) {
+      btn.classList.remove('suggested-slot', 'btn-success');
+      btn.classList.add('btn-outline-primary');
+    }
+  });
+
+  suggestedSlot = null;
+  suggestionModal.hide();
+
+  // Reset message
+  document.getElementById('selectedSlot').textContent = 'No slot selected';
+  document.getElementById('slotNumberInput').value = '';
+});
+
+</script>
+
+  <!-- Location Permission Modal -->
+  <div class="modal fade" id="locationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">📍 Location Access Required</h5>
+        </div>
+        <div class="modal-body text-center p-4">
+          <i class="fas fa-map-marker-alt location-icon"></i>
+          <p class="lead mb-3">Please enable your location to proceed with booking the nearest parking slot.</p>
+          <div id="locationStatus" class="alert d-none">
+            <div class="loading-spinner d-none" id="locationSpinner"></div>
+            <span id="locationMessage"></span>
+          </div>
+          <button type="button" class="btn btn-primary mt-3" id="enableLocation">
+            <i class="fas fa-location-arrow me-2"></i>Enable Location
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Your existing JavaScript code for parking configuration and slot handling
+
+    // Location handling
+    const locationModal = new bootstrap.Modal('#locationModal', { backdrop: 'static' });
+    const locationStatus = document.getElementById('locationStatus');
+    let userLocation = null;
+
+    // Show location modal when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initially hide the booking form
+      document.getElementById('bookingForm').classList.add('d-none');
+      locationModal.show();
+    });
+
+    document.getElementById('enableLocation').addEventListener('click', () => {
+      const button = document.getElementById('enableLocation');
+      const spinner = document.getElementById('locationSpinner');
+      const statusMessage = document.getElementById('locationMessage');
+      
+      button.disabled = true;
+      locationStatus.classList.remove('d-none');
+      spinner.classList.remove('d-none');
+      statusMessage.textContent = 'Requesting location access...';
+      locationStatus.className = 'alert alert-info';
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            
+            spinner.classList.add('d-none');
+            locationStatus.className = 'alert alert-success';
+            statusMessage.innerHTML = '<i class="fas fa-check-circle status-icon"></i>Location access granted!';
+            button.innerHTML = '<i class="fas fa-check me-2"></i>Location Enabled';
+            
+            setTimeout(() => {
+              locationModal.hide();
+              document.getElementById('bookingForm').classList.remove('d-none');
+            }, 1500);
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            spinner.classList.add('d-none');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Try Again';
+            locationStatus.className = 'alert alert-danger';
+            statusMessage.innerHTML = '<i class="fas fa-exclamation-triangle status-icon"></i>Location access denied.<br>Please enable location services to continue.';
+          }
+        );
+      } else {
+        spinner.classList.add('d-none');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Enable Location';
+        locationStatus.className = 'alert alert-danger';
+        statusMessage.innerHTML = '<i class="fas fa-times-circle status-icon"></i>Geolocation is not supported by your browser.';
+      }
+    });
+  </script>
+</body>
+</html>

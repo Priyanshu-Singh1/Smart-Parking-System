@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking - Profile</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0V4LLanw2qksYuRlEzO+tcaEPQogQ0KaoIF2cdSyf3K3zGzQ7vGj3F9n3Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* Shared Styles from map.html for consistency */
+        body {
+            overflow-x: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+
+        body.fade-in-active {
+            opacity: 1;
+        }
+
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out;
+        }
+
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+            transition: all 0.4s ease-in-out;
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 18px 55px 0 rgba(0, 0, 0, 0.65);
+            transform: translateY(-7px);
+        }
+
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+        .animate-delay-800 { animation-delay: 0.8s; }
+        .animate-delay-1000 { animation-delay: 1s; }
+
+
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 220%;
+            height: 220%;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .nav-link-highlight {
+            text-shadow: 0 0 10px rgba(134, 239, 172, 0.7);
+            text-decoration: underline;
+            color: #34d399;
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        .nav-link-highlight:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(134, 239, 172, 1);
+        }
+
+        .audio-control {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: rgba(45, 212, 191, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.95);
+            transform: scale(1.08);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%;
+            overflow: hidden;
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6),
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15);
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9),
+            0 0 40px rgba(134, 239, 172, 0.7);
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8),
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC;
+            animation: subtlePulse 2s infinite alternate;
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08);
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0;
+        }
+
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02);
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Profile Specific Styles */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.08); /* Slightly less opaque for inner card */
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.6); /* More pronounced shadow */
+            transition: all 0.5s ease-in-out;
+            padding: 2.5rem; /* Increased padding */
+        }
+
+        .profile-card:hover {
+            box-shadow: 0 25px 70px 0 rgba(0, 0, 0, 0.8);
+            transform: translateY(-10px);
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid rgba(134, 239, 172, 0.8); /* Green border */
+            box-shadow: 0 0 20px rgba(134, 239, 172, 0.6), 0 0 30px rgba(134, 239, 172, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(134, 239, 172, 1), 0 0 50px rgba(134, 239, 172, 0.8);
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(134, 239, 172, 0.5);
+            border-color: #86EFAC;
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .input-glass::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Animation for success checkmark */
+        @keyframes drawCheck {
+            0% {
+                stroke-dashoffset: 100;
+                opacity: 0;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+        .check-animation {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawCheck 0.6s ease-out forwards;
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #86EFAC;
+            border-radius: 50%;
+            width: 1em;
+            height: 1em;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+        .tooltip-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* At the bottom of the tooltip */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
+
+        /* AI Insight Card */
+        .ai-insight-card {
+            background: rgba(134, 239, 172, 0.1); /* Light green tint */
+            border: 1px solid rgba(134, 239, 172, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(134, 239, 172, 0.2);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .ai-insight-card:hover {
+            box-shadow: 0 12px 40px rgba(134, 239, 172, 0.4);
+            transform: translateY(-5px);
+        }
+        .ai-insight-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(134, 239, 172, 0.15);
+            border-radius: 50%;
+            animation: pulse-light 2s infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes pulse-light {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+    </style>
+</head>
+
+<body class="animated-bg text-white min-h-screen flex flex-col" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight nav-link-current">Profile</a>
+            <a href="billing.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="forecast.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Forecast</a>
+            <a href="login.html" class="px-4 py-2 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <section class="flex-grow flex items-center justify-center p-10">
+        <div class="max-w-3xl w-full mx-auto profile-card text-white text-center animate-fade-in-up animate-delay-200">
+            <h2 class="text-4xl font-bold mb-8 title-3d-effect">👤 User Profile</h2>
+
+            <img id="profile-avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                 class="profile-avatar mx-auto mb-6" alt="Profile Picture" />
+
+            <div id="view-mode">
+                <h3 class="text-3xl font-bold mb-3 animate-fade-in animate-delay-400" id="view-name"></h3>
+                <p class="text-gray-300 text-lg mb-2 animate-fade-in animate-delay-600 tooltip-container" id="view-email-wrapper">
+                    Email: <span id="view-email"></span>
+                    <i class="fas fa-copy text-green-400 ml-2 cursor-pointer hover:text-green-300 transition" onclick="copyToClipboard('view-email')"></i>
+                    <span class="tooltip" id="copy-tooltip">Copied!</span>
+                </p>
+                <p class="text-gray-200 text-lg">Account Type:
+                    <span class="font-semibold text-green-400 flex items-center justify-center gap-2">
+                        <i class="fas fa-star text-yellow-400"></i> <span id="view-account-type"></span>
+                    </span>
+                </p>
+                <p class="text-gray-200 text-lg mb-6">
+                    <span class="block" id="view-premium-benefit"></span>
+                    <span class="block">Member Since: <span class="font-semibold" id="view-member-since"></span></span>
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 mt-6 text-xl">
+                    <div class="glassmorphism p-4 rounded-lg flex items-center justify-center flex-col animate-fade-in animate-delay-800">
+                        <i class="fas fa-car-alt text-green-400 text-3xl mb-2"></i>
+                        <span class="font-bold" id="stat-sessions"></span>
+                        <span class="text-gray-300 text-sm">Parking Sessions</span>
+                    </div>
+                    <div class="glassmorphism p-4 rounded-lg flex items-center justify-center flex-col animate-fade-in animate-delay-900">
+                        <i class="fas fa-money-bill-wave text-yellow-400 text-3xl mb-2"></i>
+                        <span class="font-bold" id="stat-savings"></span>
+                        <span class="text-gray-300 text-sm">Total Savings</span>
+                    </div>
+                    <div class="glassmorphism p-4 rounded-lg flex items-center justify-center flex-col animate-fade-in animate-delay-1000">
+                        <i class="fas fa-trophy text-blue-400 text-3xl mb-2"></i>
+                        <span class="font-bold" id="stat-badges"></span>
+                        <span class="text-gray-300 text-sm">Achievements Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="ai-insight-card animate-fade-in animate-delay-1000">
+                    <i class="fas fa-brain text-green-300 text-4xl mb-3"></i>
+                    <h4 class="text-2xl font-bold text-green-200 mb-2">AI Parking Insight:</h4>
+                    <p class="text-lg text-gray-100 italic" id="ai-insight-message"></p>
+                    <p class="text-xs text-gray-400 mt-3">Last AI Update: <span id="ai-last-update"></span></p>
+                </div>
+
+
+                <button onclick="toggleEdit(true)" class="mt-8 px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full transition transform hover:scale-105 btn-glow animate-fade-in animate-delay-1000">
+                    Edit Profile
+                </button>
+            </div>
+
+            <div id="edit-mode" class="hidden text-left space-y-5 animate-fade-in">
+                <label class="block">
+                    <span class="text-sm text-gray-300 font-medium">Full Name</span>
+                    <input type="text" id="edit-name"
+                           class="input-glass w-full mt-1 px-5 py-3 border rounded-xl placeholder-gray-500 text-lg"
+                           placeholder="Enter your full name" />
+                </label>
+
+                <label class="block">
+                    <span class="text-sm text-gray-300 font-medium">Email Address</span>
+                    <input type="email" id="edit-email"
+                           class="input-glass w-full mt-1 px-5 py-3 border rounded-xl placeholder-gray-500 text-lg"
+                           placeholder="Enter your email" />
+                </label>
+
+                <label class="block">
+                    <span class="text-sm text-gray-300 font-medium">Password (leave blank to keep current)</span>
+                    <input type="password" id="edit-password"
+                           class="input-glass w-full mt-1 px-5 py-3 border rounded-xl placeholder-gray-500 text-lg"
+                           placeholder="Enter new password" />
+                </label>
+
+                <div class="flex justify-end gap-4 mt-8">
+                    <button onclick="toggleEdit(false)" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full transition transform hover:scale-105 btn-glow">Cancel</button>
+                    <button id="save-button" onclick="saveChanges()" class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full transition transform hover:scale-105 btn-glow flex items-center justify-center">
+                        <span id="save-button-text">Save Changes</span>
+                        <span id="save-button-spinner" class="spinner ml-2 hidden"></span>
+                        <svg id="save-button-checkmark" class="h-6 w-6 text-green-300 ml-2 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path class="check-animation" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Audio Control Script (replicated for consistency)
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 0 011-1V9a1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        function navigatePage(url) {
+            playInteractiveClickSound();
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400);
+        }
+
+        // --- Avatar URLs ---
+        const maleAvatarUrl = "Images/avata2.jpg";
+        const femaleAvatarUrl = "Images/Avatar1.jpg";
+        const defaultAvatarUrl = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+
+        // Function to fetch user data from server
+        async function fetchUserData() {
+            try {
+                const response = await fetch('get_user_data.php');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentUserData.name = data.firstName;
+                    currentUserData.accountType = data.plan || 'Basic';
+                    currentUserData.memberSince = data.joinDate;
+                    
+                    // Update the UI with the new data
+                    populateProfileData();
+                } else {
+                    console.error('Failed to fetch user data:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        }
+
+        // Mock User Data - Will be replaced with actual data from server
+        let currentUserData = {
+            name: "Loading...", // Will be updated with actual name
+            email: "Loading...",
+            accountType: "Loading...",
+            premiumBenefit: "Loading...",
+            memberSince: "Loading...", // Will be updated with registration date
+            stats: {
+                parkingSessions: 0,
+                totalSavings: "₹0",
+                achievements: 0,
+            },
+            aiInsight: {
+                messages: {
+                    male: [
+                        "Based on your habits, Mr. [Name], consider parking at 'City Centre Garage' on Tuesdays for best availability.",
+                        "Your average parking session duration has increased by 15% this month, Mr. [Name]! Look out for extended stay discounts!",
+                        "You've saved a remarkable amount this quarter, Mr. [Name]! Keep using 'SmartSuggest' for optimal spots.",
+                        "We predict a 10% increase in parking demand near 'Cyber Hub' next week. Plan your visits accordingly, sir!",
+                        "Your preferred parking zone, Sector 18 Noida, has 20% higher availability on weekends based on recent data."
+                    ],
+                    female: [
+                        "We noticed you frequently park near 'DLF Cyber City', Ms. [Name]. Parking slots are usually full by 10 AM there.",
+                        "Maximize your savings, Ms. [Name]! Consider booking a slot in advance for your regular trips.",
+                        "Your parking patterns suggest you could benefit from our new 'Flexi-Pass' subscription, ma'am.",
+                        "AI suggests you try 'Mall of India Basement P4' for quicker exit during peak hours, Ms. [Name].",
+                        "Avoid peak hours (5-7 PM) at major shopping centers for better parking experience."
+                    ],
+                    other: [
+                        "We noticed you frequently park near 'DLF Cyber City'. Parking slots are usually full by 10 AM there.",
+                        "Maximize your savings! Consider booking a slot in advance for your regular trips.",
+                        "Your parking patterns suggest you could benefit from our new 'Flexi-Pass' subscription.",
+                        "AI suggests you try 'Mall of India Basement P4' for quicker exit during peak hours.",
+                        "Avoid peak hours (5-7 PM) at major shopping centers for better parking experience."
+                    ]
+                },
+                lastUpdate: new Date().toLocaleString()
+            }
+        };
+
+        // Simulated AI Gender Detection - Expanded for more common Indian names
+        function detectGenderFromName(name) {
+            if (!name || name.trim() === '') {
+                console.log("DetectGenderFromName: Name is empty, defaulting to 'other'");
+                return 'other'; // If no name is provided, default to 'other'
+            }
+
+            const normalizedName = name.trim().toLowerCase();
+            const firstName = normalizedName.split(' ')[0]; // Use first name for detection
+
+            const maleNames = [
+                'albert', 'john', 'robert', 'michael', 'william', 'david', 'james', 'joseph', 'charles', 'thomas',
+                'chris', 'rajesh', 'sanjay', 'amit', 'vikram', 'mohit', 'anil', 'prakash', 'suresh', 'naveen',
+                'arjun', 'virat', 'siddharth', 'rahul', 'aditya', 'vineet', 'harsh', 'kartik', 'sumit', 'gopal',
+                'ravi', 'kumar', 'deepak', 'prateek', 'shivam', 'vipin', 'ram', 'goutam', 'ashok', 'mukesh', 'ajay',
+                'manoj', 'sunil', 'vijay', 'anand', 'pranav', 'ritesh', 'yogesh', 'abhinav', 'akash', 'gaurav',
+                'pankaj', 'dinesh', 'sachin', 'ashish', 'vivek', 'arun', 'prem', 'shyam', 'karan', 'rohit'
+            ];
+            const femaleNames = [
+                'alice', 'maria', 'susan', 'linda', 'barbara', 'patricia', 'jennifer', 'elizabeth', 'mary', 'helen',
+                'sonia', 'priya', 'pooja', 'neha', 'anjali', 'shikha', 'ritu', 'geeta', 'meena', 'rani',
+                'divya', 'shruti', 'komal', 'sweety', 'monika', 'rekha', 'seema', 'shweta', 'sita', 'lakshmi',
+                'esha', 'preeti', 'usha', 'madhu', 'nisha', 'sarita', 'tina', 'reena', 'swati', 'kavita',
+                'anita', 'bindu', 'chhaya', 'deepa', 'esha', 'jyoti', 'kamla', 'lata', 'maya', 'nalini',
+                'poonam', 'radha', 'sadhana', 'tarun', 'uma', 'vandana', 'yogita', 'zoya'
+            ];
+
+            if (maleNames.includes(firstName)) {
+                console.log(`DetectGenderFromName: Detected '${firstName}' as 'male'`);
+                return 'male';
+            } else if (femaleNames.includes(firstName)) {
+                console.log(`DetectGenderFromName: Detected '${firstName}' as 'female'`);
+                return 'female';
+            } else {
+                console.log(`DetectGenderFromName: Could not confidently detect gender for '${firstName}', defaulting to 'other'`);
+                return 'other'; // Fallback for names not in our lists
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    navigatePage(event.currentTarget.href);
+                });
+            });
+
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+                while (targetElement && targetElement !== document.body) {
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle' && !targetElement.classList.contains('modal-close-button')) {
+                        if (!targetElement.hasAttribute('onclick')) {
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            const page = document.getElementById('page');
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+
+            const currentPath = window.location.pathname.split('/').pop();
+            document.querySelectorAll('nav a').forEach(link => {
+                const linkHref = link.getAttribute('href').split('/').pop();
+                if (linkHref === currentPath) {
+                    link.classList.add('nav-link-current');
+                } else {
+                    link.classList.remove('nav-link-current');
+                }
+            });
+
+            // Fetch user data and populate profile
+            fetchUserData();
+        });
+
+        // Function to populate profile data dynamically
+        function populateProfileData() {
+            const profileAvatar = document.getElementById("profile-avatar");
+
+            // AI (simulated) detects gender based on current name
+            currentUserData.gender = detectGenderFromName(currentUserData.name);
+            console.log("populateProfileData: AI Detected gender:", currentUserData.gender, "for name:", currentUserData.name);
+
+            let avatarToSet = defaultAvatarUrl; // Start with default
+            if (currentUserData.gender === "male") {
+                avatarToSet = maleAvatarUrl;
+            } else if (currentUserData.gender === "female") {
+                avatarToSet = femaleAvatarUrl;
+            }
+
+            profileAvatar.src = avatarToSet;
+            console.log("populateProfileData: Setting avatar src to:", profileAvatar.src);
+            profileAvatar.onerror = () => {
+                console.error("populateProfileData: Failed to load avatar image:", profileAvatar.src);
+                profileAvatar.src = defaultAvatarUrl; // Fallback if the image doesn't load
+            };
+
+
+            document.getElementById("view-name").innerText = currentUserData.name || "N/A"; // Display N/A if name is empty
+            document.getElementById("view-email").innerText = currentUserData.email;
+            document.getElementById("view-account-type").innerText = currentUserData.accountType;
+            document.getElementById("view-premium-benefit").innerText = currentUserData.premiumBenefit;
+            document.getElementById("view-member-since").innerText = currentUserData.memberSince;
+
+            // AI-like dynamic stats
+            document.getElementById("stat-sessions").innerText = currentUserData.stats.parkingSessions;
+            document.getElementById("stat-savings").innerText = currentUserData.stats.totalSavings;
+            document.getElementById("stat-badges").innerText = currentUserData.stats.achievements;
+
+            // AI Insight
+            const genderSpecificMessages = currentUserData.aiInsight.messages[currentUserData.gender] || currentUserData.aiInsight.messages.other;
+            const randomInsightIndex = Math.floor(Math.random() * genderSpecificMessages.length);
+            let insightMessage = genderSpecificMessages[randomInsightIndex];
+
+            // Personalize message with name if applicable
+            if (insightMessage.includes('[Name]')) {
+                const firstName = currentUserData.name.split(' ')[0];
+                insightMessage = insightMessage.replace(/\[Name\]/g, firstName);
+            }
+            document.getElementById("ai-insight-message").innerText = insightMessage;
+            document.getElementById("ai-last-update").innerText = new Date().toLocaleString();
+
+            // Set values for edit mode
+            document.getElementById("edit-name").value = currentUserData.name;
+            document.getElementById("edit-email").value = currentUserData.email;
+        }
+
+        // Profile-specific functions
+        function toggleEdit(show) {
+            playInteractiveClickSound();
+
+            document.getElementById('view-mode').classList.toggle('hidden', show);
+            document.getElementById('edit-mode').classList.toggle('hidden', !show);
+
+            const saveButton = document.getElementById('save-button');
+            const saveButtonText = document.getElementById('save-button-text');
+            const saveButtonSpinner = document.getElementById('save-button-spinner');
+            const saveButtonCheckmark = document.getElementById('save-button-checkmark');
+
+            saveButtonText.textContent = 'Save Changes';
+            saveButtonSpinner.classList.add('hidden');
+            saveButtonCheckmark.classList.add('hidden');
+            saveButton.disabled = false;
+        }
+
+        function saveChanges() {
+            playInteractiveClickSound();
+
+            const saveButton = document.getElementById('save-button');
+            const saveButtonText = document.getElementById('save-button-text');
+            const saveButtonSpinner = document.getElementById('save-button-spinner');
+            const saveButtonCheckmark = document.getElementById('save-button-checkmark');
+            const checkmarkPath = saveButtonCheckmark.querySelector('.check-animation');
+
+            // Show spinner, disable button
+            saveButtonText.textContent = 'Saving...';
+            saveButtonSpinner.classList.remove('hidden');
+            saveButton.disabled = true;
+            saveButton.classList.add('btn-pulse');
+
+            setTimeout(() => {
+                const newName = document.getElementById('edit-name').value;
+                const newEmail = document.getElementById('edit-email').value;
+
+                // Update currentUserData with user input
+                currentUserData.name = newName;
+                currentUserData.email = newEmail;
+
+                currentUserData.aiInsight.lastUpdate = new Date().toLocaleString();
+
+                saveButtonSpinner.classList.add('hidden');
+                saveButtonText.textContent = '';
+                saveButtonCheckmark.classList.remove('hidden');
+                checkmarkPath.style.animation = 'none';
+                void checkmarkPath.offsetWidth;
+                checkmarkPath.style.animation = null;
+                saveButton.classList.remove('btn-pulse');
+
+                setTimeout(() => {
+                    populateProfileData(); // Re-populate with updated data, triggering gender detection
+                    toggleEdit(false);
+                }, 1000);
+            }, 2000);
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const textToCopy = element.innerText;
+
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    const tooltip = document.getElementById('copy-tooltip');
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = '1';
+                    setTimeout(() => {
+                        tooltip.style.opacity = '0';
+                        tooltip.style.visibility = 'hidden';
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy email to clipboard.');
+                });
+        }
+    </script>
+</body>
+</html>

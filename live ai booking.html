@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live AI Slot Booking - Smart Parking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Standardized Body and Page Transition */
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+            opacity: 0; /* Start with opacity 0 for fade-in */
+            transition: opacity 0.4s ease-in; /* Fade-in transition */
+        }
+
+        body.fade-in-active {
+            opacity: 1; /* Target opacity for fade-in */
+        }
+
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* Consistent Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite; /* Adjusted duration for smoothness */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect - Refined for 3D appearance */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.08); /* Slightly less opaque for better shadow contrast */
+            backdrop-filter: blur(12px); /* Increased blur for stronger effect */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Softer border */
+            border-radius: 25px; /* More rounded */
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4); /* Deeper initial shadow */
+            transition: all 0.4s ease-in-out; /* Smoother transitions */
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.6); /* Even deeper on hover */
+            transform: translateY(-5px); /* Subtle lift on hover */
+        }
+
+        /* Hero Section/Content Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+        .animate-delay-800 { animation-delay: 0.8s; } /* Added for more elements */
+        .animate-delay-1000 { animation-delay: 1s; } /* Added for more elements */
+
+
+        /* Button Hover Glow */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.5); /* green-300 with opacity */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Button Pulsate Animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.8); /* Tailwind green-400, slightly more opaque */
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Highlighted Nav Link Styling (now applied to all by default) */
+        .nav-link-highlight {
+            text-shadow: 0 0 8px rgba(134, 239, 172, 0.8); /* green-300 glow */
+            text-decoration: underline; /* Add underline for highlight */
+            color: #34d399; /* Tailwind green-400 for text color */
+            transform: scale(1.05); /* Slightly enlarge */
+        }
+        /* Nav Link Hover effect (still useful even if all are highlighted, adds extra pop) */
+        .nav-link-highlight:hover {
+            transform: scale(1.1); /* Slightly more enlarge on hover */
+            text-shadow: 0 0 12px rgba(134, 239, 172, 1); /* Stronger glow on hover */
+        }
+
+        /* Input Field Styling (kept for consistency, even if not directly on dashboard) */
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .input-field-custom {
+            width: 100%;
+            padding: 1rem 0.75rem;
+            border: 1px solid rgba(113, 128, 150, 0.5);
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.7);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field-custom::placeholder {
+            color: transparent;
+        }
+
+        .input-field-custom:focus {
+            border-color: #34d399;
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3);
+            background-color: rgba(30, 41, 59, 0.9);
+            transform: scale(1.01);
+        }
+
+        .input-label-custom {
+            position: absolute;
+            top: 1rem;
+            left: 0.75rem;
+            color: rgba(156, 163, 175, 0.8);
+            font-size: 1rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field-custom:focus + .input-label-custom,
+        .input-field-custom:not(:placeholder-shown) + .input-label-custom {
+            top: -0.8rem;
+            left: 0.5rem;
+            font-size: 0.8rem;
+            color: #34d399;
+            background-color: #203a43;
+            padding: 0 0.3rem;
+            border-radius: 3px;
+        }
+
+        /* Audio Control Button Styling */
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(45, 212, 191, 0.7); /* Teal-400 with opacity */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.9); /* Teal-600 with opacity */
+            transform: scale(1.05);
+        }
+
+        /* Logo and Title 3D Effect (Always highlighted and animated) */
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%; /* Make it round if it's a square image */
+            overflow: hidden; /* Ensure rounded corners are applied */
+            transform: translateY(-3px) scale(1.08); /* Slightly lifted and enlarged by default */
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6), /* Default green glow */
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite; /* Apply subtle floating animation */
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15); /* Lift and enlarge more on hover */
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9), /* Stronger green glow on hover */
+            0 0 40px rgba(134, 239, 172, 0.7); /* Wider glow on hover */
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease; /* Added color transition */
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), /* Default green glow */
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC; /* Default color: bright green-300 */
+            animation: subtlePulse 2s infinite alternate; /* Apply subtle pulsating animation */
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08); /* Lift and enlarge slightly more on hover */
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0; /* Even brighter green on hover */
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02); /* Slightly grow */
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8); /* Stronger glow */
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        /* Image Floating Animation (if you use images with this effect) */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); } /* Subtle up and down movement */
+            100% { transform: translateY(0px); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's above everything */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: relative;
+            background: rgba(30, 41, 59, 0.9); /* Darker glassmorphism background */
+            backdrop-filter: blur(15px); /* Increased blur for modal */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px; /* More rounded */
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            color: white;
+            text-align: center;
+            opacity: 0; /* For modal content animation */
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Chart/Graph Placeholder Styling */
+        .chart-placeholder {
+            width: 100%;
+            height: 250px; /* Fixed height for the graph area */
+            background: linear-gradient(to right top, #1a202c, #2d3748); /* Subtle gradient for depth */
+            border-radius: 15px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.3); /* Dashed border for placeholder feel */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3); /* Inner shadow */
+        }
+    </style>
+</head>
+<body class="animated-bg text-white min-h-screen flex flex-col justify-center items-center" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="Images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-3 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-3 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-3 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-3 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-3 transition-all duration-300 nav-link-highlight">Profile</a>
+            <a href="billing.html" class="px-3 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="forecast.html" class="px-3 transition-all duration-300 nav-link-highlight">Forecast</a>
+            <a href="login.html" class="px-3 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col justify-center items-center py-16 px-4">
+        <div class="glassmorphism text-white p-6 rounded-xl shadow-2xl animate-fade-in">
+            <h2 class="text-5xl font-extrabold text-center mb-6 text-green-300">
+                Live AI Slot Booking
+            </h2>
+            <p class="text-lg mb-8">
+                This is where the real-time AI-powered slot booking interface would be!
+                You could see live availability maps, predicted demand, and optimized routing suggestions here.
+            </p>
+            <div style="height: 300px; background: rgba(0,0,0,0.3); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                [Simulated Live Map/Booking Interface]
+            </div>
+            <button onclick="navigatePage('dashboard.html')" class="mt-8 bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow-lg
+                           hover:bg-green-800 transition-all duration-300 transform hover:scale-105 btn-glow">
+                Back to Dashboard
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Copy the entire script block from dashboard.html here to ensure navigation,
+        // audio, and fade effects work on this page as well.
+        // --- START SCRIPT BLOCK ---
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        function navigatePage(url) {
+            playInteractiveClickSound();
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400);
+        }
+
+        function openModal(modalId) {
+            playInteractiveClickSound();
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            playInteractiveClickSound();
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+                while (targetElement && targetElement !== document.body) {
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle' && !targetElement.classList.contains('modal-close-button')) {
+                        if (!targetElement.hasAttribute('onclick')) {
+                            playInteractiveClickSound();
+                        }
+                        break;
+                    }
+                    else if (targetElement.tagName === 'A' && targetElement.href && targetElement.getAttribute('href') !== '#') {
+                        event.preventDefault();
+                        navigatePage(targetElement.href);
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    const activeModals = document.querySelectorAll('.modal-overlay.active');
+                    activeModals.forEach(modal => closeModal(modal.id));
+                }
+            });
+
+            const page = document.getElementById('page');
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+        });
+        // --- END SCRIPT BLOCK ---
+    </script>
+</body>
+</html>

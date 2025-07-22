@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Smart Parking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            overflow-x: hidden; /* Prevent horizontal scroll on animations */
+            opacity: 0; /* Start with opacity 0 for fade-in */
+            transition: opacity 0.4s ease-in; /* Fade-in transition */
+        }
+
+        body.fade-in-active {
+            opacity: 1; /* Target opacity for fade-in */
+        }
+
+        /* Consistent Animated Background with Index Page */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite; /* Adjusted duration for smoothness */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect - Refined for 3D appearance */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.08); /* Slightly less opaque for better shadow contrast */
+            backdrop-filter: blur(12px); /* Increased blur for stronger effect */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Softer border */
+            border-radius: 25px; /* More rounded */
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4); /* Deeper initial shadow */
+            transition: all 0.4s ease-in-out; /* Smoother transitions */
+        }
+
+        .glassmorphism:hover {
+            box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.6); /* Even deeper on hover */
+            transform: translateY(-5px); /* Subtle lift on hover */
+        }
+
+        /* Hero Section Animations - Copied from index.html */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-delay-200 { animation-delay: 0.2s; }
+        .animate-delay-400 { animation-delay: 0.4s; }
+        .animate-delay-600 { animation-delay: 0.6s; }
+
+        /* Button Hover Glow - Copied from index.html */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(134, 239, 172, 0.5); /* green-300 with opacity */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-glow:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Button Pulsate Animation - Copied from index.html */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.0);
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.8); /* Tailwind green-400, slightly more opaque */
+            }
+            70% {
+                transform: scale(1.03);
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Highlighted Nav Link Styling */
+        .nav-link-highlight {
+            text-shadow: 0 0 8px rgba(134, 239, 172, 0.8); /* green-300 glow */
+            text-decoration: underline; /* Add underline for highlight */
+            color: #34d399; /* Tailwind green-400 for text color */
+            transform: scale(1.05); /* Slightly enlarge */
+        }
+        /* Original Nav Link Hover Glow (kept for general links) */
+        .nav-link-glow:hover {
+            text-shadow: 0 0 8px rgba(134, 239, 172, 0.8); /* green-300 glow */
+        }
+
+        /* --- REFINED INPUT FIELD STYLING --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem; /* More space for animated label */
+        }
+
+        .input-field-custom {
+            width: 100%;
+            padding: 1rem 0.75rem; /* Increased padding */
+            border: 1px solid rgba(113, 128, 150, 0.5); /* gray-500 with opacity */
+            border-radius: 10px; /* More rounded input fields */
+            background-color: rgba(30, 41, 59, 0.7); /* slate-900 with opacity */
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease; /* Smooth transition for all properties */
+            outline: none; /* Remove default outline */
+        }
+
+        .input-field-custom::placeholder {
+            color: transparent; /* Hide default placeholder */
+        }
+
+        .input-field-custom:focus {
+            border-color: #34d399; /* green-400 */
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3); /* Subtle green glow */
+            background-color: rgba(30, 41, 59, 0.9); /* Darker on focus */
+            transform: scale(1.01); /* Very subtle 3D push effect */
+        }
+
+        /* Animated Placeholder/Label */
+        .input-label-custom {
+            position: absolute;
+            top: 1rem; /* Adjust to align with input padding */
+            left: 0.75rem; /* Adjust to align with input padding */
+            color: rgba(156, 163, 175, 0.8); /* gray-400 with opacity */
+            font-size: 1rem;
+            pointer-events: none; /* Allows clicks to pass through to the input */
+            transition: all 0.3s ease;
+        }
+
+        .input-field-custom:focus + .input-label-custom,
+        .input-field-custom:not(:placeholder-shown) + .input-label-custom {
+            top: -0.8rem; /* Move label above input */
+            left: 0.5rem; /* Adjust horizontal position */
+            font-size: 0.8rem; /* Smaller font size */
+            color: #34d399; /* Green color on focus/filled */
+            background-color: #203a43; /* Match animated-bg middle color */
+            padding: 0 0.3rem;
+            border-radius: 3px;
+        }
+
+        /* Audio Control Button Styling - Copied from index.html */
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(45, 212, 191, 0.7); /* Teal-400 with opacity */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        .audio-control:hover {
+            background-color: rgba(20, 184, 166, 0.9); /* Teal-600 with opacity */
+            transform: scale(1.05);
+        }
+
+        /* Add fade-out transition for the body */
+        body.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.4s ease-out; /* Adjust to match your desired fade duration */
+        }
+
+        /* --- Re-added CSS for Logo and Title 3D Effect (Always highlighted and animated) --- */
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-3d-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50%; /* Make it round if it's a square image */
+            overflow: hidden; /* Ensure rounded corners are applied */
+            transform: translateY(-3px) scale(1.08); /* Slightly lifted and enlarged by default */
+            box-shadow: 0 0 15px rgba(134, 239, 172, 0.6), /* Default green glow */
+            0 0 25px rgba(134, 239, 172, 0.4);
+            animation: float 3s ease-in-out infinite; /* Apply subtle floating animation */
+        }
+
+        .logo-3d-effect:hover {
+            transform: translateY(-8px) scale(1.15); /* Lift and enlarge more on hover */
+            box-shadow: 0 0 25px rgba(134, 239, 172, 0.9), /* Stronger green glow on hover */
+            0 0 40px rgba(134, 239, 172, 0.7); /* Wider glow on hover */
+        }
+
+        .title-3d-effect {
+            transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease; /* Added color transition */
+            text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), /* Default green glow */
+            0 0 20px rgba(134, 239, 172, 0.6);
+            color: #86EFAC; /* Default color: bright green-300 */
+            animation: subtlePulse 2s infinite alternate; /* Apply subtle pulsating animation */
+        }
+
+        .title-3d-effect:hover {
+            transform: translateY(-5px) scale(1.08); /* Lift and enlarge slightly more on hover */
+            text-shadow: 0 0 20px rgba(134, 239, 172, 1), 0 0 30px rgba(134, 239, 172, 0.8);
+            color: #A7F3D0; /* Even brighter green on hover */
+        }
+
+        /* Custom subtle pulse animation for the title */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+            50% {
+                transform: scale(1.02); /* Slightly grow */
+                text-shadow: 0 0 18px rgba(134, 239, 172, 1), 0 0 28px rgba(134, 239, 172, 0.8); /* Stronger glow */
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 12px rgba(134, 239, 172, 0.8), 0 0 20px rgba(134, 239, 172, 0.6);
+            }
+        }
+
+        /* Image Floating Animation (if you use images with this effect) */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); } /* Subtle up and down movement */
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+
+<body class="animated-bg text-white min-h-screen flex flex-col justify-center items-center" id="page">
+
+    <audio id="background-audio" loop autoplay muted volume="0.2">
+        <source src="audio/futuristic_ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/900/900.wav" preload="auto"></audio>
+
+    <button id="audio-toggle" class="audio-control">
+        <svg id="speaker-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
+
+    <nav class="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-black bg-opacity-60 shadow-lg glassmorphism z-50">
+        <div class="flex items-center">
+            <img src="images/Logo Parking.jpg" alt="Smart Parking Logo" class="w-12 h-12 mr-3 logo-3d-effect">
+            <h1 class="text-3xl font-bold title-3d-effect">Smart Parking</h1>
+        </div>
+        <div>
+            <a href="index.html" class="px-3 transition-all duration-300 nav-link-highlight">Home</a>
+            <a href="dashboard.html" class="px-3 transition-all duration-300 nav-link-highlight">Dashboard</a>
+            <a href="map.html" class="px-3 transition-all duration-300 nav-link-highlight">Map</a>
+            <a href="security.html" class="px-3 transition-all duration-300 nav-link-highlight">Security</a>
+            <a href="profile.html" class="px-3 transition-all duration-300 nav-link-highlight">Profile</a>
+            <a href="billing.html" class="px-3 transition-all duration-300 nav-link-highlight">Billing</a>
+            <a href="forecast.html" class="px-3 transition-all duration-300 nav-link-highlight">Forecast</a>
+            <a href="login.html" class="px-3 transition-all duration-300 nav-link-highlight">Login</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col justify-center items-center py-16 px-4">
+        <section class="text-center max-w-xl animate-fade-in-up animate-delay-200 mb-8">
+            <h2 class="text-5xl font-extrabold mb-4 leading-tight drop-shadow-lg text-green-300">
+                Welcome Back!
+            </h2>
+            <p class="text-xl text-gray-200">
+                Securely access your Smart Parking dashboard.
+            </p>
+        </section>
+
+        <form onsubmit="return handleLogin(event)"
+              class="glassmorphism text-white rounded-lg p-8 w-full max-w-sm animate-fade-in-up animate-delay-400">
+            <div class="flex flex-col items-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm0-11V6a2 2 0 114 0v3m-6 4h.01M12 14h.01M16 14h.01" />
+                </svg>
+                <h2 class="text-3xl font-bold text-green-300">Member Login</h2>
+            </div>
+
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="input-group">
+                    <input type="email" id="username" name="username" placeholder=" " required
+                           class="input-field-custom" />
+                    <label for="username" class="input-label-custom">Email</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder=" " required
+                           class="input-field-custom" />
+                    <label for="password" class="input-label-custom">Password</label>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-green-600 text-white font-semibold px-4 py-3 rounded-md shadow-lg
+                               hover:bg-green-700 transition-all duration-300 transform hover:scale-105
+                               btn-glow">
+                    Login
+                </button>
+                <div id="loginMessage" class="mt-4 text-center hidden"></div>
+            </form>
+
+            <div class="mt-6 text-center text-gray-300 text-sm">
+                <a href="forgot-password.html" class="text-green-400 hover:underline transition-all duration-200">Forgot Password?</a>
+                <p class="mt-3">
+                    Don't have an account?
+                    <a href="signup.html" class="text-green-400 hover:underline transition-all duration-200">Sign Up</a>
+                </p>
+            </div>
+        </form>
+    </main>
+
+    <footer class="py-6 px-4 bg-black bg-opacity-70 text-center text-gray-400">
+        <p>&copy; 2025 Smart Parking System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Audio Control Script (Background Music)
+        const backgroundAudio = document.getElementById('background-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const speakerIcon = document.getElementById('speaker-icon');
+        const clickSound = document.getElementById('clickSound');
+
+        let isMuted = true; // Audio starts muted as per HTML attribute
+
+        // Set initial icon to muted speaker
+        speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (isMuted) {
+                backgroundAudio.muted = false;
+                backgroundAudio.play().catch(e => console.log("Background audio play blocked:", e.message));
+                isMuted = false;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 3.687 12 4.106 12 5v14c0 .894-1.077 1.313-1.707.687L5.586 15z" />`;
+            } else {
+                backgroundAudio.muted = true;
+                isMuted = true;
+                speakerIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a4 4 0 11-8 0 4 4 0 018 0z" />`;
+            }
+        });
+
+        // Function to play interactive click sound
+        function playInteractiveClickSound() {
+            if (clickSound) {
+                clickSound.currentTime = 0; // Rewind to start
+                clickSound.play().catch(e => { /* console.log("Interactive click sound play blocked:", e.message) */ });
+            }
+        }
+
+        // Function for page navigation with fade-out
+        function navigatePage(url) {
+            playInteractiveClickSound(); // Play sound immediately on click
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400); // Match this duration with the fade-out transition in CSS
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Autoplay policy handling
+            backgroundAudio.play().catch(e => console.log("Autoplay blocked:", e.message));
+
+            // Event listener for all clickable elements (buttons and links)
+            document.body.addEventListener('click', (event) => {
+                let targetElement = event.target;
+
+                // Traverse up the DOM to find the actual button or anchor tag
+                while (targetElement && targetElement !== document.body) {
+                    // Handle buttons (excluding the audio toggle button)
+                    if (targetElement.tagName === 'BUTTON' && targetElement.id !== 'audio-toggle') {
+                        playInteractiveClickSound();
+                        break;
+                    }
+                    // Handle anchor tags with a valid href (not just '#')
+                    else if (targetElement.tagName === 'A' && targetElement.href && targetElement.getAttribute('href') !== '#') {
+                        event.preventDefault(); // Prevent default link behavior
+                        navigatePage(targetElement.href); // Use the standard href for navigation
+                        break;
+                    }
+                    targetElement = targetElement.parentElement;
+                }
+            });
+
+            // Fade-in transition for the page
+            const page = document.getElementById('page');
+            // Use requestAnimationFrame for smoother initial render
+            requestAnimationFrame(() => {
+                page.classList.add('fade-in-active');
+            });
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            playInteractiveClickSound();
+            
+            const form = event.target;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('login.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                messageDiv.classList.remove('hidden');
+                if (result.status === 'success') {
+                    messageDiv.className = 'mt-4 text-center text-green-400';
+                    messageDiv.textContent = result.message;
+                    // Redirect to dashboard after successful login
+                    setTimeout(() => navigatePage('dashboard.html'), 1500);
+                } else {
+                    messageDiv.className = 'mt-4 text-center text-red-400';
+                    messageDiv.textContent = result.message;
+                }
+            } catch (error) {
+                messageDiv.classList.remove('hidden');
+                messageDiv.className = 'mt-4 text-center text-red-400';
+                messageDiv.textContent = 'An error occurred during login';
+            }
+            
+            return false;
+        }
+    </script>
+</body>
+</html>
